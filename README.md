@@ -2,7 +2,7 @@
 
 A personalized first-birthday invitation and private RSVP guest book, built with React, Vite, TypeScript, Supabase, and Vercel Node.js Functions.
 
-**Celebration:** Friday, September 11, 2026 · Asia/Manila. Time, venue, and RSVP deadline are intentionally unconfigured. Valyria’s supplied pink portrait is configured as the invitation’s featured photo. Every invitation reserves exactly one named seat.
+**Celebration:** Friday, September 11, 2026 · Asia/Manila. Time, venue, and RSVP deadline are intentionally unconfigured. Valyria’s supplied pink portrait is the featured image, with her family photos presented in an interactive carousel. Every invitation reserves exactly one named seat.
 
 ## Start in Visual Studio Code
 

@@ -242,6 +242,86 @@ export function EventDetails({ config = event }: { config?: EventConfig }) {
   );
 }
 
+export function PhotoCarousel({ photos }: { photos: EventConfig['photos'] }) {
+  const [index, setIndex] = useState(0);
+  const touchStart = useRef<number | null>(null);
+  const move = (amount: number) =>
+    setIndex((current) => (current + amount + photos.length) % photos.length);
+  const photo = photos[index];
+  if (!photo) return null;
+  return (
+    <div
+      className="photo-carousel"
+      role="region"
+      aria-roledescription="carousel"
+      aria-label="Valyria’s first year photos"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          move(-1);
+        }
+        if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          move(1);
+        }
+      }}
+      onTouchStart={(e) => {
+        touchStart.current = e.changedTouches[0]?.clientX ?? null;
+      }}
+      onTouchEnd={(e) => {
+        const end = e.changedTouches[0]?.clientX;
+        if (touchStart.current === null || end === undefined) return;
+        const distance = end - touchStart.current;
+        touchStart.current = null;
+        if (Math.abs(distance) >= 45) move(distance > 0 ? -1 : 1);
+      }}
+    >
+      <div className="carousel-stage">
+        <img key={photo.src} src={photo.src} alt={photo.alt} />
+        {photos.length > 1 && (
+          <>
+            <button
+              type="button"
+              className="carousel-arrow previous"
+              onClick={() => move(-1)}
+              aria-label="Previous photo"
+            >
+              ‹
+            </button>
+            <button
+              type="button"
+              className="carousel-arrow next"
+              onClick={() => move(1)}
+              aria-label="Next photo"
+            >
+              ›
+            </button>
+          </>
+        )}
+      </div>
+      <p className="carousel-caption">{photo.alt}</p>
+      <p className="carousel-status" aria-live="polite" aria-atomic="true">
+        Photo {index + 1} of {photos.length}
+      </p>
+      {photos.length > 1 && (
+        <div className="carousel-dots" aria-label="Choose a photo">
+          {photos.map((item, itemIndex) => (
+            <button
+              type="button"
+              key={item.src}
+              className={itemIndex === index ? 'active' : ''}
+              onClick={() => setIndex(itemIndex)}
+              aria-label={`Show photo ${itemIndex + 1}`}
+              aria-current={itemIndex === index ? 'true' : undefined}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function InvitationPage({
   invitation,
   preview,
@@ -525,18 +605,7 @@ export function InvitationPage({
                 A year of <em>sweet moments.</em>
               </h2>
             </div>
-            <div
-              className={`photo-grid ${event.photos.length === 1 ? 'single-photo' : ''}`}
-            >
-              {event.photos.map((photo) => (
-                <img
-                  key={photo.src}
-                  src={photo.src}
-                  alt={photo.alt}
-                  loading="lazy"
-                />
-              ))}
-            </div>
+            <PhotoCarousel photos={event.photos} />
           </section>
         )}
         <section id="rsvp" className="rsvp-section section-pad">

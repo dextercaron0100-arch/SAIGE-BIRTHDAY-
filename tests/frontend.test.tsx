@@ -127,6 +127,11 @@ it('shows TBA details, hides unavailable sections, and displays the configured p
       name: 'Valyria sitting in a pink birthday portrait setting',
     }),
   ).toHaveLength(2);
+  await user.click(screen.getByRole('button', { name: 'Next photo' }));
+  expect(
+    screen.getByRole('img', { name: 'A close-up portrait of newborn Valyria' }),
+  ).toBeInTheDocument();
+  expect(screen.getByText('Photo 2 of 7')).toBeInTheDocument();
 });
 it('shows configured time, countdown and directions', () => {
   render(

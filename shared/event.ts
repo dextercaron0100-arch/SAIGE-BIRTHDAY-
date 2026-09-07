@@ -25,6 +25,30 @@ export const event: EventConfig = {
       src: '/photos/valyria-pink-portrait.png',
       alt: 'Valyria sitting in a pink birthday portrait setting',
     },
+    {
+      src: '/photos/valyria-newborn-closeup.jpeg',
+      alt: 'A close-up portrait of newborn Valyria',
+    },
+    {
+      src: '/photos/valyria-one-month.jpg',
+      alt: 'Valyria smiling beside a soft white number one',
+    },
+    {
+      src: '/photos/valyria-poolside.jpeg',
+      alt: 'Valyria being held beside a sunny swimming pool',
+    },
+    {
+      src: '/photos/valyria-sunflower-outfit.jpeg',
+      alt: 'Valyria wearing a handmade red and green sunflower outfit',
+    },
+    {
+      src: '/photos/valyria-sunflower-closeup.jpeg',
+      alt: 'A close-up of Valyria in her sunflower outfit',
+    },
+    {
+      src: '/photos/valyria-mermaid-portrait.png',
+      alt: 'Valyria posing in a colorful mermaid portrait setting',
+    },
   ],
   colors: {
     background: '#fbe9ef',
