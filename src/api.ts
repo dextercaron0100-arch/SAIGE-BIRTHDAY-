@@ -10,11 +10,12 @@ export async function request<T>(
   path: string,
   body?: unknown,
   jwt?: string,
+  method?: 'POST' | 'PATCH',
 ): Promise<T> {
   let response: Response;
   try {
     response = await fetch(path, {
-      method: body === undefined ? 'GET' : 'POST',
+      method: body === undefined ? 'GET' : (method ?? 'POST'),
       headers: {
         ...(body === undefined ? {} : { 'Content-Type': 'application/json' }),
         ...(jwt ? { Authorization: `Bearer ${jwt}` } : {}),

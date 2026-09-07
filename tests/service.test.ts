@@ -186,6 +186,42 @@ describe('organizer operations', () => {
     expect(guest.token).toMatch(/^[a-f0-9]{64}$/);
     expect(new Set(Array.from({ length: 100 }, newToken)).size).toBe(100);
   });
+  it('edits guest details without changing the personal invitation token', async () => {
+    const original = repo.guests[0];
+    const result = await call(
+      '/api/admin/guests',
+      {
+        id: original.id,
+        name: '  Avery Rose  ',
+        status: 'declined',
+        message: 'Sending birthday love',
+      },
+      { ...admin, method: 'PATCH' },
+    );
+    const { guest } = result.body as { guest: Guest };
+    expect(guest).toMatchObject({
+      name: 'Avery Rose',
+      status: 'declined',
+      message: 'Sending birthday love',
+      token: tokenA,
+    });
+    expect(
+      (await call('/api/invitation', { token: tokenA })).body,
+    ).toMatchObject({ name: 'Avery Rose', status: 'declined' });
+  });
+  it.each([
+    { name: '', status: 'pending', message: '' },
+    { name: 'Avery', status: 'maybe', message: '' },
+    { name: 'Avery', status: 'pending', message: 'x'.repeat(501) },
+  ])('rejects invalid guest edits %j', async (changes) => {
+    await expect(
+      call(
+        '/api/admin/guests',
+        { id: repo.guests[0].id, ...changes },
+        { ...admin, method: 'PATCH' },
+      ),
+    ).rejects.toMatchObject({ status: 400 });
+  });
   it.each(['', '   ', 'x'.repeat(121), 'Name\nAnother'])(
     'rejects invalid names',
     async (name) => {

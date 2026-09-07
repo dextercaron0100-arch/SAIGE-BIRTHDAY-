@@ -30,6 +30,15 @@ export class MemoryRepository implements Repository {
   async list() {
     return this.guests.map((g) => ({ ...g }));
   }
+  async update(
+    id: string,
+    changes: Pick<Guest, 'name' | 'status' | 'message'>,
+  ) {
+    const g = this.guests.find((g) => g.id === id);
+    if (!g) return null;
+    Object.assign(g, changes);
+    return { ...g };
+  }
   async rotate(id: string, token: string) {
     const g = this.guests.find((g) => g.id === id);
     if (!g) return null;

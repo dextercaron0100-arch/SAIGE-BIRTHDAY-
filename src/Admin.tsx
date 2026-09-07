@@ -25,6 +25,7 @@ export default function Admin() {
   const [busy, setBusy] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [rotating, setRotating] = useState<Guest | null>(null);
+  const [editing, setEditing] = useState<Guest | null>(null);
   const [manualLink, setManualLink] = useState('');
   const activeUser = useRef<string | undefined>(undefined);
   activeUser.current = session?.user.id;
@@ -45,6 +46,7 @@ export default function Admin() {
         setLoaded(false);
         setManualLink('');
         setRotating(null);
+        setEditing(null);
       }
     });
     return () => data.subscription.unsubscribe();
@@ -79,6 +81,7 @@ export default function Admin() {
     setLoaded(false);
     setManualLink('');
     setRotating(null);
+    setEditing(null);
     if (session?.user.id) void refresh();
   }, [session?.user.id]);
   async function login(e: FormEvent) {
@@ -119,6 +122,31 @@ export default function Admin() {
       setError(
         err instanceof Error ? err.message : 'Unable to create invitation.',
       );
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function saveGuestEdit(changes: {
+    name: string;
+    status: Attendance;
+    message: string;
+  }) {
+    if (!editing) return;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      const { guest } = await request<{ guest: Guest }>(
+        '/api/admin/guests',
+        { id: editing.id, ...changes },
+        await jwt(),
+        'PATCH',
+      );
+      setGuests((old) => old.map((g) => (g.id === guest.id ? guest : g)));
+      setEditing(null);
+      setNotice(`Guest details updated for ${guest.name}.`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to update guest.');
     } finally {
       setBusy(false);
     }
@@ -483,6 +511,16 @@ export default function Admin() {
                           className="text-button subtle"
                           onClick={() => {
                             setError('');
+                            setEditing(g);
+                          }}
+                          disabled={busy}
+                        >
+                          Edit guest
+                        </button>
+                        <button
+                          className="text-button subtle"
+                          onClick={() => {
+                            setError('');
                             setRotating(g);
                           }}
                           disabled={busy}
@@ -520,8 +558,121 @@ export default function Admin() {
             cancel={() => setRotating(null)}
           />
         )}
+        {editing && (
+          <EditGuestDialog
+            guest={editing}
+            busy={busy}
+            error={error}
+            save={(changes) => void saveGuestEdit(changes)}
+            cancel={() => setEditing(null)}
+          />
+        )}
       </main>
     </div>
+  );
+}
+
+function EditGuestDialog({
+  guest,
+  busy,
+  error,
+  save,
+  cancel,
+}: {
+  guest: Guest;
+  busy: boolean;
+  error: string;
+  save: (changes: {
+    name: string;
+    status: Attendance;
+    message: string;
+  }) => void;
+  cancel: () => void;
+}) {
+  const [dialog, setDialog] = useState<HTMLDialogElement | null>(null);
+  const [name, setName] = useState(guest.name);
+  const [status, setStatus] = useState<Attendance>(guest.status);
+  const [message, setMessage] = useState(guest.message);
+  useEffect(() => {
+    dialog?.showModal();
+    return () => dialog?.close();
+  }, [dialog]);
+  return (
+    <dialog
+      ref={setDialog}
+      onCancel={(e) => {
+        e.preventDefault();
+        if (!busy) cancel();
+      }}
+      aria-labelledby="edit-guest-title"
+    >
+      <h2 id="edit-guest-title">Edit guest</h2>
+      <p>
+        Update this invitation’s guest details. Their personal invitation link
+        will stay the same.
+      </p>
+      <form
+        className="edit-guest-form"
+        onSubmit={(e) => {
+          e.preventDefault();
+          save({ name, status, message });
+        }}
+      >
+        <label htmlFor="edit-guest-name">
+          Guest’s name
+          <input
+            id="edit-guest-name"
+            autoFocus
+            required
+            maxLength={120}
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+          />
+        </label>
+        <label htmlFor="edit-guest-status">
+          Response
+          <select
+            id="edit-guest-status"
+            value={status}
+            onChange={(e) => setStatus(e.target.value as Attendance)}
+          >
+            <option value="pending">Pending</option>
+            <option value="attending">Attending</option>
+            <option value="declined">Declined</option>
+          </select>
+        </label>
+        <label htmlFor="edit-guest-message">
+          Birthday message
+          <textarea
+            id="edit-guest-message"
+            rows={4}
+            maxLength={500}
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Optional message from the guest"
+          />
+          <small>{message.length}/500 characters</small>
+        </label>
+        {error && (
+          <p role="alert" className="error">
+            {error}
+          </p>
+        )}
+        <div className="dialog-actions">
+          <button
+            type="button"
+            className="button secondary"
+            disabled={busy}
+            onClick={cancel}
+          >
+            Cancel
+          </button>
+          <button className="button" disabled={busy || !name.trim()}>
+            {busy ? 'Saving…' : 'Save changes'}
+          </button>
+        </div>
+      </form>
+    </dialog>
   );
 }
 

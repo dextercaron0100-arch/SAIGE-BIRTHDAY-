@@ -69,6 +69,16 @@ export function createRepository(): Repository {
       check(error);
       return data as Guest;
     },
+    async update(id, changes) {
+      const { data, error } = await db
+        .from('guests')
+        .update(changes)
+        .eq('id', id)
+        .select()
+        .maybeSingle();
+      check(error);
+      return data as Guest | null;
+    },
     async rotate(id, token) {
       const { data, error } = await db
         .from('guests')

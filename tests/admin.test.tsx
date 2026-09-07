@@ -110,6 +110,49 @@ it('creates a guest only after successful storage', async () => {
     'organizer-session',
   );
 });
+it('edits guest details and keeps the invitation token', async () => {
+  const user = userEvent.setup();
+  render(<Admin />);
+  await screen.findByText('Avery');
+  const updated = {
+    ...guest,
+    name: 'Avery Rose',
+    status: 'declined' as const,
+    message: 'Sending birthday love',
+  };
+  mocks.request.mockResolvedValueOnce({ guest: updated });
+  await user.click(screen.getAllByRole('button', { name: 'Edit guest' })[0]);
+  const dialog = screen.getByRole('dialog');
+  const name = within(dialog).getByLabelText('Guest’s name');
+  await user.clear(name);
+  await user.type(name, updated.name);
+  await user.selectOptions(
+    within(dialog).getByLabelText('Response'),
+    'declined',
+  );
+  await user.clear(within(dialog).getByLabelText(/^Birthday message/));
+  await user.type(
+    within(dialog).getByLabelText(/^Birthday message/),
+    updated.message,
+  );
+  await user.click(
+    within(dialog).getByRole('button', { name: 'Save changes' }),
+  );
+  expect(mocks.request).toHaveBeenLastCalledWith(
+    '/api/admin/guests',
+    {
+      id: guest.id,
+      name: updated.name,
+      status: 'declined',
+      message: updated.message,
+    },
+    'organizer-session',
+    'PATCH',
+  );
+  expect(await screen.findByText('Avery Rose')).toBeInTheDocument();
+  expect(screen.getByText('Sending birthday love')).toBeInTheDocument();
+  expect(updated.token).toBe(guest.token);
+});
 it('requires confirmation to rotate, shows failures in the dialog, and preserves the RSVP', async () => {
   const user = userEvent.setup();
   render(<Admin />);

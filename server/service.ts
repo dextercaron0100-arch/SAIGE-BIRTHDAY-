@@ -21,6 +21,10 @@ export interface Repository {
   ): Promise<Guest | null>;
   list(): Promise<Guest[]>;
   create(name: string, token: string): Promise<Guest>;
+  update(
+    id: string,
+    changes: Pick<Guest, 'name' | 'status' | 'message'>,
+  ): Promise<Guest | null>;
   rotate(id: string, token: string): Promise<Guest | null>;
   userId(jwt: string): Promise<string | null>;
 }
@@ -67,7 +71,7 @@ function token(value: unknown): string {
 const routes: Record<string, string[]> = {
   '/api/invitation': ['POST'],
   '/api/rsvp': ['POST'],
-  '/api/admin/guests': ['GET', 'POST'],
+  '/api/admin/guests': ['GET', 'POST', 'PATCH'],
   '/api/admin/rotate': ['POST'],
   '/api/admin/export': ['GET'],
 };
@@ -122,7 +126,7 @@ export async function execute(
       };
     if (input.route === '/api/admin/guests' && input.method === 'GET')
       return { status: 200, body: { guests: await repo.list() } };
-    if (input.route === '/api/admin/guests') {
+    if (input.route === '/api/admin/guests' && input.method === 'POST') {
       const b = object(input.body, ['name']);
       if (
         typeof b.name !== 'string' ||
@@ -138,6 +142,43 @@ export async function execute(
         status: 201,
         body: { guest: await repo.create(b.name.trim(), newToken()) },
       };
+    }
+    if (input.route === '/api/admin/guests') {
+      const b = object(input.body, ['id', 'name', 'status', 'message']);
+      if (typeof b.id !== 'string' || !uuidPattern.test(b.id))
+        throw new ApiError(400, 'Invalid guest ID.');
+      if (
+        typeof b.name !== 'string' ||
+        !b.name.trim() ||
+        b.name.trim().length > 120 ||
+        /[\u0000-\u001f\u007f]/.test(b.name)
+      )
+        throw new ApiError(
+          400,
+          'Enter a guest name between 1 and 120 characters, without control characters.',
+        );
+      if (
+        b.status !== 'pending' &&
+        b.status !== 'attending' &&
+        b.status !== 'declined'
+      )
+        throw new ApiError(400, 'Choose a valid response status.');
+      if (
+        typeof b.message !== 'string' ||
+        b.message.length > 500 ||
+        /[\u0000\u000b\u000c]/.test(b.message)
+      )
+        throw new ApiError(
+          400,
+          'The birthday message must be 500 characters or fewer and contain no invalid control characters.',
+        );
+      const guest = await repo.update(b.id, {
+        name: b.name.trim(),
+        status: b.status,
+        message: b.message,
+      });
+      if (!guest) throw new ApiError(404, 'Guest not found.');
+      return { status: 200, body: { guest } };
     }
     const b = object(input.body, ['id']);
     if (typeof b.id !== 'string' || !uuidPattern.test(b.id))

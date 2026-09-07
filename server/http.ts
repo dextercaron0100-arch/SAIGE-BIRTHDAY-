@@ -69,7 +69,10 @@ export function createHandler(
         res.setHeader('Allow', methods.join(', '));
         throw new ApiError(405, 'Method not allowed.');
       }
-      const body = method === 'POST' ? await readBody(req) : undefined;
+      const body =
+        method === 'POST' || method === 'PATCH'
+          ? await readBody(req)
+          : undefined;
       const deps = dependencies?.() ?? {
         repo: createRepository(),
         organizers: (process.env.ORGANIZER_USER_IDS ?? '')

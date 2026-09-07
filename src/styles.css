@@ -1716,6 +1716,26 @@ dialog h2 {
   justify-content: flex-end;
   margin-top: 22px;
 }
+.edit-guest-form {
+  display: grid;
+  gap: 15px;
+  margin-top: 20px;
+}
+.edit-guest-form label {
+  display: grid;
+  gap: 7px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+.edit-guest-form textarea {
+  resize: vertical;
+}
+.edit-guest-form label small {
+  justify-self: end;
+  font-weight: 400;
+}
 
 @keyframes arrive {
   from {

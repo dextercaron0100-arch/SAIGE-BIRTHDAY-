@@ -83,3 +83,25 @@ it('serves isolated responses without caching', async () => {
   expect(response.headers.get('cache-control')).toContain('no-store');
   expect(response.headers.get('referrer-policy')).toBe('no-referrer');
 });
+it('reads JSON bodies for protected PATCH requests', async () => {
+  const guests = await fetch(`${origin}/api/admin/guests`, {
+    headers: { Authorization: 'Bearer organizer-session' },
+  }).then((response) => response.json());
+  const response = await fetch(`${origin}/api/admin/guests`, {
+    method: 'PATCH',
+    headers: {
+      Authorization: 'Bearer organizer-session',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      id: guests.guests[0].id,
+      name: 'Avery Rose',
+      status: 'pending',
+      message: '',
+    }),
+  });
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({
+    guest: { name: 'Avery Rose', status: 'pending' },
+  });
+});
