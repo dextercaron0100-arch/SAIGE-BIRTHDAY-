@@ -105,7 +105,7 @@ it('labels sample replies accurately without API calls', async () => {
   );
   expect(fetch).not.toHaveBeenCalled();
 });
-it('shows TBA details and hides map, countdown and absent photos', async () => {
+it('shows TBA details, hides unavailable sections, and displays the configured photo', async () => {
   const user = userEvent.setup();
   render(<InvitationPage invitation={guest} preview={false} save={vi.fn()} />);
   await user.click(
@@ -122,7 +122,11 @@ it('shows TBA details and hides map, countdown and absent photos', async () => {
     screen.queryByRole('link', { name: /Get directions/ }),
   ).not.toBeInTheDocument();
   expect(screen.queryByLabelText(/Time until/)).not.toBeInTheDocument();
-  expect(screen.queryByRole('img')).not.toBeInTheDocument();
+  expect(
+    screen.getAllByRole('img', {
+      name: 'Valyria sitting in a pink birthday portrait setting',
+    }),
+  ).toHaveLength(2);
 });
 it('shows configured time, countdown and directions', () => {
   render(

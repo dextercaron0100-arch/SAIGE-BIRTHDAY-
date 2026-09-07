@@ -959,6 +959,8 @@ em {
 }
 .hero-art {
   position: relative;
+  width: min(440px, 100%);
+  justify-self: center;
   padding: 15px 20px 22px;
 }
 .arch {
@@ -975,8 +977,33 @@ em {
 .arch-inner {
   position: absolute;
   inset: 13px;
+  overflow: hidden;
   border: 1px solid #d9adbb;
   border-radius: 210px 210px 2px 2px;
+}
+.arch.has-photo {
+  height: 540px;
+  border-color: #d886a1;
+  background: #ef9db8;
+  box-shadow:
+    11px 12px 0 #f4cbd7,
+    0 22px 45px #7133482b;
+}
+.hero-photo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+.arch.has-photo::after {
+  content: '';
+  position: absolute;
+  z-index: 1;
+  inset: 13px;
+  border-radius: 210px 210px 2px 2px;
+  background: linear-gradient(180deg, transparent 58%, #6c263d70 100%);
+  pointer-events: none;
 }
 .arch .satin-bow-small {
   position: absolute;
@@ -1000,6 +1027,20 @@ em {
     5px 3px 0 #d29bad;
   user-select: none;
 }
+.arch.has-photo .big-one {
+  position: absolute;
+  z-index: 2;
+  right: 14px;
+  bottom: -16px;
+  color: #fffaf5;
+  font-size: 175px;
+  line-height: 0.8;
+  opacity: 0.94;
+  transform: none;
+  text-shadow:
+    3px 2px 0 #d34f7c,
+    7px 7px 18px #4e172b59;
+}
 .art-caption {
   position: absolute;
   bottom: 54px;
@@ -1016,6 +1057,27 @@ em {
   text-transform: lowercase;
   letter-spacing: 0;
   margin-top: 3px;
+}
+.arch.has-photo .art-caption {
+  z-index: 2;
+  right: auto;
+  bottom: 25px;
+  left: 28px;
+  width: 190px;
+  padding: 10px 14px;
+  border: 1px solid #fff8ef8c;
+  border-radius: 3px;
+  color: #fffaf6;
+  background: #8c31527d;
+  text-align: left;
+  text-shadow: 0 1px 4px #4e172b;
+  backdrop-filter: blur(4px);
+}
+.arch.has-photo .art-caption em {
+  color: #fff4f7;
+}
+.arch.has-photo .art-flower {
+  display: none;
 }
 .art-flower {
   position: absolute;
@@ -1155,6 +1217,16 @@ em {
   object-fit: cover;
   border: 8px solid var(--paper);
   box-shadow: 0 6px 20px #603c470c;
+}
+.photo-grid.single-photo {
+  max-width: 560px;
+}
+.photo-grid.single-photo img {
+  height: auto;
+  border-width: 12px;
+  box-shadow:
+    0 0 0 1px #d7a1b1,
+    0 20px 55px #603c4726;
 }
 .rsvp-section {
   max-width: 1200px;
@@ -1764,6 +1836,9 @@ dialog h2 {
   .arch {
     height: 410px;
   }
+  .arch.has-photo {
+    height: 470px;
+  }
   .big-one {
     font-size: 315px;
   }
@@ -2047,6 +2122,23 @@ dialog h2 {
   .arch {
     height: 365px;
     border-radius: 170px 170px 4px 4px;
+  }
+  .arch.has-photo {
+    height: 420px;
+  }
+  .arch.has-photo .big-one {
+    right: 9px;
+    bottom: -10px;
+    font-size: 132px;
+  }
+  .arch.has-photo .art-caption {
+    bottom: 19px;
+    left: 14px;
+    width: 155px;
+    padding: 8px 10px;
+  }
+  .arch.has-photo .art-caption em {
+    font-size: 23px;
   }
   .big-one {
     font-size: 283px;

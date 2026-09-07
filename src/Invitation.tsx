@@ -257,6 +257,7 @@ export function InvitationPage({
   const [openingEnvelope, setOpeningEnvelope] = useState(false);
   const [ribbonPlayCount, setRibbonPlayCount] = useState(0);
   const date = dateParts();
+  const featuredPhoto = event.photos[0];
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (stage === 'invitation') {
@@ -467,7 +468,11 @@ export function InvitationPage({
           </div>
           <div
             className="hero-art"
-            aria-label="Decorative number one with a pink bow"
+            aria-label={
+              featuredPhoto
+                ? undefined
+                : 'Decorative number one with a pink bow'
+            }
           >
             <span className="art-spark art-spark-a" aria-hidden="true">
               ✧
@@ -475,16 +480,27 @@ export function InvitationPage({
             <span className="art-spark art-spark-b" aria-hidden="true">
               ✦
             </span>
-            <div className="arch">
-              <div className="arch-inner" />
-              <img
-                className="satin-bow-small"
-                src="/assets/satin-bow.webp"
-                alt=""
-              />
+            <div className={`arch ${featuredPhoto ? 'has-photo' : ''}`}>
+              <div className="arch-inner">
+                {featuredPhoto && (
+                  <img
+                    className="hero-photo"
+                    src={featuredPhoto.src}
+                    alt={featuredPhoto.alt}
+                    fetchPriority="high"
+                  />
+                )}
+              </div>
+              {!featuredPhoto && (
+                <img
+                  className="satin-bow-small"
+                  src="/assets/satin-bow.webp"
+                  alt=""
+                />
+              )}
               <span className="big-one">1</span>
               <span className="art-caption">
-                a whole year of <em>wonder</em>
+                our birthday girl <em>pretty in pink</em>
               </span>
               <span className="art-flower" aria-hidden="true">
                 ✳
@@ -509,7 +525,9 @@ export function InvitationPage({
                 A year of <em>sweet moments.</em>
               </h2>
             </div>
-            <div className="photo-grid">
+            <div
+              className={`photo-grid ${event.photos.length === 1 ? 'single-photo' : ''}`}
+            >
               {event.photos.map((photo) => (
                 <img
                   key={photo.src}

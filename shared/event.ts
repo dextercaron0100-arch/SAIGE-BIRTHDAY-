@@ -20,12 +20,17 @@ export const event: EventConfig = {
   address: null,
   mapUrl: null,
   rsvpDeadline: null, // Example: '2026-09-09T23:59:00+08:00'
-  photos: [], // Example: { src: '/photos/valyria.jpg', alt: 'Valyria smiling' }
+  photos: [
+    {
+      src: '/photos/valyria-pink-portrait.png',
+      alt: 'Valyria sitting in a pink birthday portrait setting',
+    },
+  ],
   colors: {
-    background: '#faeeee',
-    paper: '#fffcf8',
-    rose: '#9b4961',
-    text: '#603c47',
+    background: '#fbe9ef',
+    paper: '#fffaf7',
+    rose: '#b63e69',
+    text: '#5e3344',
   },
 };
 
