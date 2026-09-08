@@ -187,6 +187,11 @@ it('shows configured event details and photos while hiding unavailable direction
   expect(screen.getByText('JOLLIBEE CROSSING')).toBeInTheDocument();
   expect(screen.getByText('Friday, September 11, 2026')).toBeInTheDocument();
   expect(
+    screen.getByText(
+      'Should you wish to honor me with a gift, a little help toward my daily needs and future would be much appreciated.',
+    ),
+  ).toBeInTheDocument();
+  expect(
     screen.queryByRole('link', { name: /Get directions/ }),
   ).not.toBeInTheDocument();
   expect(

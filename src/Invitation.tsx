@@ -715,6 +715,10 @@ export function InvitationPage({
               Our celebration would be even sweeter with you. Let us know if you
               can join us for Valyria’s very first birthday.
             </p>
+            <p>
+              Should you wish to honor me with a gift, a little help toward my
+              daily needs and future would be much appreciated.
+            </p>
             <div className="deadline">
               <span className="eyebrow">Kindly reply by</span>
               <p>
