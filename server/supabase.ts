@@ -34,6 +34,7 @@ export function createRepository(): Repository {
       const { data, error } = await db.rpc('save_rsvp', {
         p_token: token,
         p_status: reply.status,
+        p_children_count: reply.childrenCount,
         p_message: reply.message,
         p_deadline: deadline,
       });

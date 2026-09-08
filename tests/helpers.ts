@@ -10,6 +10,7 @@ export class MemoryRepository implements Repository {
       name,
       token,
       status: 'pending',
+      children_count: 0,
       message: '',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -24,7 +25,9 @@ export class MemoryRepository implements Repository {
   async reply(token: string, reply: Reply) {
     const g = this.guests.find((g) => g.token === token);
     if (!g) return null;
-    Object.assign(g, reply);
+    g.status = reply.status;
+    g.children_count = reply.childrenCount;
+    g.message = reply.message;
     return { ...g };
   }
   async list() {
@@ -32,7 +35,7 @@ export class MemoryRepository implements Repository {
   }
   async update(
     id: string,
-    changes: Pick<Guest, 'name' | 'status' | 'message'>,
+    changes: Pick<Guest, 'name' | 'status' | 'children_count' | 'message'>,
   ) {
     const g = this.guests.find((g) => g.id === id);
     if (!g) return null;

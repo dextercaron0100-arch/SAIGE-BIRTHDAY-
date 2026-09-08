@@ -47,9 +47,10 @@ describe('real PostgreSQL schema and permissions', () => {
           ]),
         ).rejects.toThrow(/permission denied/);
         await expect(
-          db.query('select * from public.save_rsvp($1,$2,$3,$4)', [
+          db.query('select * from public.save_rsvp($1,$2,$3,$4,$5)', [
             token,
             'attending',
+            2,
             '',
             null,
           ]),
@@ -72,22 +73,43 @@ describe('real PostgreSQL schema and permissions', () => {
     await expect(
       db.query('update public.guests set message = $1', ['x'.repeat(501)]),
     ).rejects.toThrow(/check constraint/);
+    await expect(
+      db.query('update public.guests set children_count = $1', [21]),
+    ).rejects.toThrow(/check constraint/);
   });
   it('allows service-role updates without duplicate rows', async () => {
     await db.exec('set role service_role');
     try {
-      await db.query('select * from public.save_rsvp($1,$2,$3,$4)', [
+      await expect(
+        db.query('select * from public.save_rsvp($1,$2,$3,$4,$5)', [
+          token,
+          'declined',
+          1,
+          '',
+          null,
+        ]),
+      ).rejects.toThrow('INVALID_RSVP');
+      await db.query('select * from public.save_rsvp($1,$2,$3,$4,$5)', [
         token,
         'attending',
+        3,
         'A real SQL wish',
         null,
       ]);
-      const { rows } = await db.query<{ status: string; message: string }>(
-        'select * from public.save_rsvp($1,$2,$3,$4)',
-        [token, 'declined', 'Updated wish', null],
-      );
+      const { rows } = await db.query<{
+        status: string;
+        children_count: number;
+        message: string;
+      }>('select * from public.save_rsvp($1,$2,$3,$4,$5)', [
+        token,
+        'declined',
+        0,
+        'Updated wish',
+        null,
+      ]);
       expect(rows[0]).toMatchObject({
         status: 'declined',
+        children_count: 0,
         message: 'Updated wish',
       });
       expect((await db.query('select * from public.guests')).rows).toHaveLength(
@@ -99,16 +121,15 @@ describe('real PostgreSQL schema and permissions', () => {
   });
   it('enforces the database clock, including the exact deadline', async () => {
     await expect(
-      db.query('select * from public.save_rsvp($1,$2,$3,clock_timestamp())', [
-        token,
-        'attending',
-        'Too late',
-      ]),
+      db.query(
+        'select * from public.save_rsvp($1,$2,$3,$4,clock_timestamp())',
+        [token, 'attending', 2, 'Too late'],
+      ),
     ).rejects.toThrow('RSVP_CLOSED');
     await expect(
       db.query(
-        "select * from public.save_rsvp($1,$2,$3,clock_timestamp() - interval '1 day')",
-        [token, 'attending', 'Too late'],
+        "select * from public.save_rsvp($1,$2,$3,$4,clock_timestamp() - interval '1 day')",
+        [token, 'attending', 2, 'Too late'],
       ),
     ).rejects.toThrow('RSVP_CLOSED');
     const { rows } = await db.query<{ message: string }>(
@@ -128,9 +149,10 @@ describe('real PostgreSQL schema and permissions', () => {
     ]);
     expect(
       (
-        await db.query('select * from public.save_rsvp($1,$2,$3,$4)', [
+        await db.query('select * from public.save_rsvp($1,$2,$3,$4,$5)', [
           token,
           'attending',
+          2,
           'Old link',
           null,
         ])

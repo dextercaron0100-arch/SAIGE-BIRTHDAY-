@@ -37,6 +37,7 @@ describe('personal invitations', () => {
     expect(a.body).toEqual({
       name: 'Avery',
       status: 'pending',
+      childrenCount: 0,
       message: '',
       closed: false,
       deadline: null,
@@ -49,20 +50,27 @@ describe('personal invitations', () => {
     ).rejects.toMatchObject({ status: 404 });
   });
   it('updates without duplicates and restores the response', async () => {
-    await call('/api/rsvp', {
+    const first = await call('/api/rsvp', {
       token: tokenA,
       status: 'attending',
+      childrenCount: 3,
       message: 'Happy birthday!',
+    });
+    expect(first.body).toMatchObject({
+      status: 'attending',
+      childrenCount: 3,
     });
     await call('/api/rsvp', {
       token: tokenA,
       status: 'declined',
+      childrenCount: 0,
       message: 'Sending love',
     });
     const response = (await call('/api/invitation', { token: tokenA }))
       .body as Invitation;
     expect(response).toMatchObject({
       status: 'declined',
+      childrenCount: 0,
       message: 'Sending love',
     });
     expect(repo.guests).toHaveLength(2);
@@ -83,12 +91,16 @@ describe('personal invitations', () => {
     });
   });
   it.each([
-    { status: 'pending' },
-    { status: 'attending', message: 1 },
-    { status: 'attending', message: 'x'.repeat(501) },
-    { status: 'attending', name: 'Changed' },
-    { status: 'attending', deadline: null },
-    { status: 'attending', message: '\u0000' },
+    { status: 'pending', childrenCount: 0 },
+    { status: 'attending', childrenCount: 0, message: 1 },
+    { status: 'attending', childrenCount: 0, message: 'x'.repeat(501) },
+    { status: 'attending', childrenCount: 0, name: 'Changed' },
+    { status: 'attending', childrenCount: 0, deadline: null },
+    { status: 'attending', childrenCount: 0, message: '\u0000' },
+    { status: 'attending', childrenCount: -1, message: '' },
+    { status: 'attending', childrenCount: 21, message: '' },
+    { status: 'attending', childrenCount: 1.5, message: '' },
+    { status: 'declined', childrenCount: 1, message: '' },
   ])('rejects unsafe RSVP input %j', async (body) => {
     await expect(
       call('/api/rsvp', { token: tokenA, ...body }),
@@ -101,12 +113,19 @@ describe('personal invitations', () => {
         await call('/api/rsvp', {
           token: tokenA,
           status: 'attending',
+          childrenCount: 2,
           message: 'x'.repeat(500),
         })
       ).status,
     ).toBe(200);
     expect(
-      (await call('/api/rsvp', { token: tokenA, status: 'attending' })).body,
+      (
+        await call('/api/rsvp', {
+          token: tokenA,
+          status: 'attending',
+          childrenCount: 0,
+        })
+      ).body,
     ).toMatchObject({ message: '' });
   });
   it('propagates storage failures instead of claiming success', async () => {
@@ -114,7 +133,11 @@ describe('personal invitations', () => {
       new Error('Database unavailable'),
     );
     await expect(
-      call('/api/rsvp', { token: tokenA, status: 'attending' }),
+      call('/api/rsvp', {
+        token: tokenA,
+        status: 'attending',
+        childrenCount: 0,
+      }),
     ).rejects.toThrow();
   });
 });
@@ -125,12 +148,22 @@ describe('deadlines', () => {
     const boundary = Date.parse(deps.deadline);
     deps.now = () => boundary - 1;
     expect(
-      (await call('/api/rsvp', { token: tokenA, status: 'attending' })).status,
+      (
+        await call('/api/rsvp', {
+          token: tokenA,
+          status: 'attending',
+          childrenCount: 2,
+        })
+      ).status,
     ).toBe(200);
     for (const now of [boundary, boundary + 1]) {
       deps.now = () => now;
       await expect(
-        call('/api/rsvp', { token: tokenA, status: 'declined' }),
+        call('/api/rsvp', {
+          token: tokenA,
+          status: 'declined',
+          childrenCount: 0,
+        }),
       ).rejects.toMatchObject({ status: 409 });
     }
     expect(
@@ -140,7 +173,13 @@ describe('deadlines', () => {
   it('stays open without a configured deadline', async () => {
     deps.now = () => Date.parse('2035-01-01T00:00:00Z');
     expect(
-      (await call('/api/rsvp', { token: tokenA, status: 'attending' })).status,
+      (
+        await call('/api/rsvp', {
+          token: tokenA,
+          status: 'attending',
+          childrenCount: 0,
+        })
+      ).status,
     ).toBe(200);
   });
   it('requires timestamp offsets', () => {
@@ -203,6 +242,7 @@ describe('organizer operations', () => {
         id: original.id,
         name: '  Avery Rose  ',
         status: 'declined',
+        childrenCount: 0,
         message: 'Sending birthday love',
       },
       { ...admin, method: 'PATCH' },
@@ -211,6 +251,7 @@ describe('organizer operations', () => {
     expect(guest).toMatchObject({
       name: 'Avery Rose',
       status: 'declined',
+      children_count: 0,
       message: 'Sending birthday love',
       token: tokenA,
     });
@@ -245,9 +286,15 @@ describe('organizer operations', () => {
     expect(repo.guests).toHaveLength(2);
   });
   it.each([
-    { name: '', status: 'pending', message: '' },
-    { name: 'Avery', status: 'maybe', message: '' },
-    { name: 'Avery', status: 'pending', message: 'x'.repeat(501) },
+    { name: '', status: 'pending', childrenCount: 0, message: '' },
+    { name: 'Avery', status: 'maybe', childrenCount: 0, message: '' },
+    {
+      name: 'Avery',
+      status: 'pending',
+      childrenCount: 0,
+      message: 'x'.repeat(501),
+    },
+    { name: 'Avery', status: 'pending', childrenCount: 2, message: '' },
   ])('rejects invalid guest edits %j', async (changes) => {
     await expect(
       call(
@@ -269,6 +316,7 @@ describe('organizer operations', () => {
     await call('/api/rsvp', {
       token: tokenA,
       status: 'attending',
+      childrenCount: 4,
       message: 'Hooray!',
     });
     const id = repo.guests[0].id;
@@ -278,6 +326,7 @@ describe('organizer operations', () => {
     expect(guest).toMatchObject({
       id,
       status: 'attending',
+      children_count: 4,
       message: 'Hooray!',
     });
     expect(guest.token).not.toBe(tokenA);
@@ -285,7 +334,11 @@ describe('organizer operations', () => {
       call('/api/invitation', { token: tokenA }),
     ).rejects.toMatchObject({ status: 404 });
     await expect(
-      call('/api/rsvp', { token: tokenA, status: 'declined' }),
+      call('/api/rsvp', {
+        token: tokenA,
+        status: 'declined',
+        childrenCount: 0,
+      }),
     ).rejects.toMatchObject({ status: 404 });
     expect(
       (await call('/api/invitation', { token: guest.token })).body,
@@ -326,14 +379,15 @@ describe('CSV safety', () => {
       expect(csv).not.toContain(tokenA);
     },
   );
-  it('escapes quotes, commas and newlines and counts only attending seats', async () => {
+  it('escapes quotes, commas and newlines and exports attending children', async () => {
     await repo.reply(tokenA, {
       status: 'attending',
+      childrenCount: 3,
       message: 'A "wish",\nwith love',
     });
     const result = await call('/api/admin/export', undefined, admin);
     expect(result.body).toContain('"A ""wish"",\nwith love"');
-    expect(result.body).toContain('"attending","1"');
+    expect(result.body).toContain('"attending","3"');
     expect(result.body).toContain('"pending","0"');
     expect(result.body).not.toContain(tokenA);
     expect(result.headers?.['Content-Type']).toContain('text/csv');

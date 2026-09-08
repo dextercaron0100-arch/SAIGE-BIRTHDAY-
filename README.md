@@ -2,7 +2,7 @@
 
 A personalized first-birthday invitation and private RSVP guest book, built with React, Vite, TypeScript, Supabase, and Vercel Node.js Functions.
 
-**Celebration:** Friday, September 11, 2026 · 12:00 PM–2:00 PM · Jollibee Crossing · Asia/Manila. RSVPs close at midnight after September 10, with an on-page countdown. The street address and map URL remain unconfigured. Valyria’s supplied pink portrait is the featured image, with her family photos presented in an interactive carousel. Every invitation reserves exactly one named seat.
+**Celebration:** Friday, September 11, 2026 · 12:00 PM–2:00 PM · Jollibee Crossing · Asia/Manila. RSVPs close at midnight after September 10, with an on-page countdown. The street address and map URL remain unconfigured. Valyria’s supplied pink portrait is the featured image, with her family photos presented in an interactive carousel. One invitation can collect a family’s response and the number of children joining.
 
 ## Start in Visual Studio Code
 
@@ -59,31 +59,31 @@ Edit **`shared/event.ts`**, the single source of truth for event details, timezo
 ## Create and manage real invitations
 
 1. Sign in at `/admin` on the deployed site.
-2. Enter **one guest’s name** and select **Create invitation**. Names need not be unique, so take care not to create the same person twice.
-3. Use **Copy link** beside that guest and privately share it. Links use the current site origin, e.g. `https://your-project.vercel.app/#invite=TOKEN`. Create/copy production links on the production site, not on localhost or a Vercel preview deployment.
-4. Guests open their cover, select “Joyfully attending” or “Unable to attend,” optionally enter up to 500 characters, and submit. Their assigned name is read-only; there is no companion count or guest-list access.
+2. Enter **one guest or family name** and select **Create invitation**. Names need not be unique, so take care not to create the same household twice.
+3. Use **Copy link** beside that family and privately share it. Links use the current site origin, e.g. `https://your-project.vercel.app/#invite=TOKEN`. Create/copy production links on the production site, not on localhost or a Vercel preview deployment.
+4. Families open their cover, select “Joyfully attending” or “Unable to attend,” choose how many children will join (0–20), optionally enter up to 500 characters, and submit. Their assigned family name is read-only and they cannot access the guest list.
 5. Reopening the original link retrieves the saved response and allows updates until the deadline. A successful write updates the same row; it never creates a second RSVP.
-6. Use search and response filters, refresh for fresh responses, and read totals. One attending guest equals one attending seat. CSV exports include **all guests**, regardless of active filters, and exclude tokens.
+6. Use search and response filters, refresh for fresh responses, and read totals for attending families and children. CSV exports include **all invitations** and their children counts, regardless of active filters, and exclude tokens.
 7. To invalidate a shared link, select **Replace link** and confirm. Existing attendance/message data stays intact; the old link cannot read or write that invitation. Copy and privately share the replacement. If a write completed before replacement, its response is retained.
 8. To permanently remove an invitation, select **Delete guest** and confirm. This deletes the guest’s RSVP and message and invalidates their personal link immediately.
 
-**Invitation links are bearer credentials. Anyone holding a link can read and update that guest’s RSVP.** The browser captures its token into memory and removes the URL fragment. Refreshing the cleaned URL requires reopening the original personal link. Tokens are not persisted in local/session storage. The admin session is managed by Supabase Auth, separately from invitation tokens.
+**Invitation links are bearer credentials. Anyone holding a link can read and update that family’s RSVP and children count.** The browser captures its token into memory and removes the URL fragment. Refreshing the cleaned URL requires reopening the original personal link. Tokens are not persisted in local/session storage. The admin session is managed by Supabase Auth, separately from invitation tokens.
 
 ## Security and API behavior
 
-| Route               | Methods                  | Authorization                                                                                               |
-| ------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------- |
-| `/api/invitation`   | POST                     | `{ token }` in JSON body                                                                                    |
-| `/api/rsvp`         | POST                     | `{ token, status, message? }` in JSON body                                                                  |
-| `/api/admin/guests` | GET, POST, PATCH, DELETE | Supabase Bearer JWT; POST body `{ name }`; PATCH body `{ id, name, status, message }`; DELETE body `{ id }` |
-| `/api/admin/rotate` | POST                     | Supabase Bearer JWT; body `{ id }`                                                                          |
-| `/api/admin/export` | GET                      | Supabase Bearer JWT                                                                                         |
+| Route               | Methods                  | Authorization                                                                                                              |
+| ------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `/api/invitation`   | POST                     | `{ token }` in JSON body                                                                                                   |
+| `/api/rsvp`         | POST                     | `{ token, status, childrenCount, message? }` in JSON body                                                                  |
+| `/api/admin/guests` | GET, POST, PATCH, DELETE | Supabase Bearer JWT; POST body `{ name }`; PATCH body `{ id, name, status, childrenCount, message }`; DELETE body `{ id }` |
+| `/api/admin/rotate` | POST                     | Supabase Bearer JWT; body `{ id }`                                                                                         |
+| `/api/admin/export` | GET                      | Supabase Bearer JWT                                                                                                        |
 
 - Every admin request calls Supabase `auth.getUser(jwt)` and checks the returned UUID against the server allowlist. Never rely on browser session claims for server authorization.
 - Each invitation uses 32 cryptographically random bytes encoded as 64 hexadecimal characters. Tokens are unique, stored only in the protected guests table, and returned only to authorized organizers. They appear in POST bodies, not API query strings.
 - RLS is enabled with no anonymous/authenticated policies, and table/function privileges are revoked for those roles. The server uses the privileged service role. The RSVP function is security-invoker and executable only by that role.
 - The SQL function locks the token-matched row, checks database time after obtaining the lock, then writes the response. API deadline checks supply immediate feedback; the database check also covers writes delayed by locks. The deadline is supplied solely by trusted server configuration, never accepted from the guest.
-- Methods, JSON shapes, names, tokens, status, IDs, and messages are validated. POST bodies are limited to 8 KiB, including streamed bodies; malformed JSON, compression, and unsupported content types are rejected. APIs return `no-store` headers and generic storage errors.
+- Methods, JSON shapes, names, tokens, status, children counts, IDs, and messages are validated. Children counts must be whole numbers from 0 to 20, and declined responses store zero. POST bodies are limited to 8 KiB, including streamed bodies; malformed JSON, compression, and unsupported content types are rejected. APIs return `no-store` headers and generic storage errors.
 - There is no application request-body logging. Do not enable request-body tracing in hosting/database monitoring: Supabase infrastructure may process token filters and RPC bodies. Keep access to that infrastructure private. Avoid sharing logs, guest exports, or screenshots containing personal details.
 - CSV values are quoted, embedded quotes are escaped, and dangerous formula/control prefixes are neutralized with an apostrophe. Invitation tokens and guest IDs are excluded.
 - Guest lists are paginated internally to avoid Supabase’s default per-response row cap. The dashboard loads the full list and does not poll automatically; select Refresh as needed.
@@ -99,7 +99,7 @@ npm run build
 
 `npm run format` applies Prettier formatting. `npm run test:watch` watches unit/integration tests. `npm run preview` serves the production frontend only; use `npm run dev` for local full-stack functionality.
 
-Tests cover API token isolation, validation, updates, deadline boundaries, per-route organizer authorization, token replacement, confirmed guest deletion, CSV safety, HTTP errors/body limits, failed frontend submissions, saved response restoration, preview isolation, and conditional event sections. Database tests execute the actual SQL in embedded PostgreSQL (PGlite), including service-role access, forbidden roles, constraints, deadlines, and replacement behavior. They require no Supabase credentials and do not mutate a remote database.
+Tests cover API token isolation, family children counts, validation, updates, deadline boundaries, per-route organizer authorization, token replacement, confirmed guest deletion, CSV safety, HTTP errors/body limits, failed frontend submissions, saved response restoration, preview isolation, and conditional event sections. Database tests execute the actual SQL in embedded PostgreSQL (PGlite), including service-role access, forbidden roles, constraints, deadlines, and replacement behavior. They require no Supabase credentials and do not mutate a remote database.
 
 For desktop and mobile browser checks, run `npx playwright install chromium` once, then `npm run test:browser`. The browser suite starts the development server if necessary and saves full-page screenshots in ignored `artifacts/`. To use an installed Chrome instead, set `PLAYWRIGHT_CHANNEL=chrome` (PowerShell: `$env:PLAYWRIGHT_CHANNEL='chrome'`) before running the suite. The preview checks use no API; real-response checks use explicitly mocked APIs. No live guest data is created.
 

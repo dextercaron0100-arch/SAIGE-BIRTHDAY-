@@ -65,6 +65,7 @@ test('real invitation token is removed from the URL and saved responses can be u
       json: {
         name: 'Test Guest',
         status: 'attending',
+        childrenCount: 2,
         message: 'Previously saved wish',
         closed: false,
         deadline: null,
@@ -76,6 +77,7 @@ test('real invitation token is removed from the URL and saved responses can be u
     expect(route.request().postDataJSON()).toEqual({
       token,
       status: 'declined',
+      childrenCount: 0,
       message: 'Updated wish',
     });
     attempts++;
@@ -89,6 +91,7 @@ test('real invitation token is removed from the URL and saved responses can be u
             json: {
               name: 'Test Guest',
               status: 'declined',
+              childrenCount: 0,
               message: 'Updated wish',
               deadline: null,
               closed: false,
@@ -109,6 +112,9 @@ test('real invitation token is removed from the URL and saved responses can be u
   ).toBeChecked();
   await expect(page.getByLabel(/A little wish/)).toHaveValue(
     'Previously saved wish',
+  );
+  await expect(page.getByLabel('How many kids will be joining?')).toHaveValue(
+    '2',
   );
   await page.getByRole('radio', { name: /Unable to attend/ }).check();
   await page.getByLabel(/A little wish/).fill('Updated wish');

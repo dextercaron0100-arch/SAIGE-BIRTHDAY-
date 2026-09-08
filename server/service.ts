@@ -23,7 +23,7 @@ export interface Repository {
   create(name: string, token: string): Promise<Guest>;
   update(
     id: string,
-    changes: Pick<Guest, 'name' | 'status' | 'message'>,
+    changes: Pick<Guest, 'name' | 'status' | 'children_count' | 'message'>,
   ): Promise<Guest | null>;
   remove(id: string): Promise<boolean>;
   rotate(id: string, token: string): Promise<Guest | null>;
@@ -100,6 +100,7 @@ export async function execute(
   const publicGuest = (g: Guest) => ({
     name: g.name,
     status: g.status,
+    childrenCount: g.children_count,
     message: g.message,
     deadline,
     closed,
@@ -153,7 +154,13 @@ export async function execute(
       return { status: 200, body: { deleted: true } };
     }
     if (input.route === '/api/admin/guests') {
-      const b = object(input.body, ['id', 'name', 'status', 'message']);
+      const b = object(input.body, [
+        'id',
+        'name',
+        'status',
+        'childrenCount',
+        'message',
+      ]);
       if (typeof b.id !== 'string' || !uuidPattern.test(b.id))
         throw new ApiError(400, 'Invalid guest ID.');
       if (
@@ -173,6 +180,13 @@ export async function execute(
       )
         throw new ApiError(400, 'Choose a valid response status.');
       if (
+        !Number.isInteger(b.childrenCount) ||
+        (b.childrenCount as number) < 0 ||
+        (b.childrenCount as number) > 20 ||
+        (b.status !== 'attending' && b.childrenCount !== 0)
+      )
+        throw new ApiError(400, 'Choose a valid number of children.');
+      if (
         typeof b.message !== 'string' ||
         b.message.length > 500 ||
         /[\u0000\u000b\u000c]/.test(b.message)
@@ -184,6 +198,7 @@ export async function execute(
       const guest = await repo.update(b.id, {
         name: b.name.trim(),
         status: b.status,
+        children_count: b.childrenCount as number,
         message: b.message,
       });
       if (!guest) throw new ApiError(404, 'Guest not found.');
@@ -199,7 +214,9 @@ export async function execute(
 
   const b = object(
     input.body,
-    input.route === '/api/rsvp' ? ['token', 'status', 'message'] : ['token'],
+    input.route === '/api/rsvp'
+      ? ['token', 'status', 'childrenCount', 'message']
+      : ['token'],
   );
   const invitationToken = token(b.token);
   if (input.route === '/api/invitation') {
@@ -213,6 +230,13 @@ export async function execute(
   }
   if (b.status !== 'attending' && b.status !== 'declined')
     throw new ApiError(400, 'Please choose an attendance response.');
+  if (
+    !Number.isInteger(b.childrenCount) ||
+    (b.childrenCount as number) < 0 ||
+    (b.childrenCount as number) > 20 ||
+    (b.status === 'declined' && b.childrenCount !== 0)
+  )
+    throw new ApiError(400, 'Please choose a valid number of children.');
   if (
     b.message !== undefined &&
     (typeof b.message !== 'string' ||
@@ -230,7 +254,11 @@ export async function execute(
     );
   const guest = await repo.reply(
     invitationToken,
-    { status: b.status, message: (b.message as string | undefined) ?? '' },
+    {
+      status: b.status,
+      childrenCount: b.childrenCount as number,
+      message: (b.message as string | undefined) ?? '',
+    },
     deadline,
   );
   if (!guest)

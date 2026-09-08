@@ -21,6 +21,7 @@ const [database, anonymousTable, anonymousRpc, users] = await Promise.all([
   publicClient.rpc('save_rsvp', {
     p_token: '0'.repeat(64),
     p_status: 'attending',
+    p_children_count: 0,
     p_message: '',
     p_deadline: null,
   }),

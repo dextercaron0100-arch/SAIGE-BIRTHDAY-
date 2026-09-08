@@ -23,6 +23,7 @@ const guest: Guest = {
   name: 'Avery',
   token: 'a'.repeat(64),
   status: 'attending',
+  children_count: 3,
   message: 'Happy birthday!',
   created_at: '',
   updated_at: '',
@@ -48,6 +49,7 @@ beforeEach(() => {
         id: '00000000-0000-0000-0000-000000000002',
         name: 'Blair',
         status: 'pending',
+        children_count: 0,
         token: 'b'.repeat(64),
         message: '',
       },
@@ -93,12 +95,12 @@ it('creates a guest only after successful storage', async () => {
   render(<Admin />);
   await screen.findByText('Avery');
   mocks.request.mockRejectedValueOnce(new Error('Service unavailable.'));
-  await user.type(screen.getByLabelText('Guest’s full name'), 'Casey');
+  await user.type(screen.getByLabelText('Guest or family name'), 'Casey');
   await user.click(screen.getByRole('button', { name: /Create invitation/ }));
   expect(await screen.findByRole('alert')).toHaveTextContent(
     'Service unavailable.',
   );
-  expect(screen.getByLabelText('Guest’s full name')).toHaveValue('Casey');
+  expect(screen.getByLabelText('Guest or family name')).toHaveValue('Casey');
   mocks.request.mockResolvedValueOnce({
     guest: { ...guest, id: 'new-guest', name: 'Casey' },
   });
@@ -117,7 +119,8 @@ it('edits guest details and keeps the invitation token', async () => {
   const updated = {
     ...guest,
     name: 'Avery Rose',
-    status: 'declined' as const,
+    status: 'attending' as const,
+    children_count: 4,
     message: 'Sending birthday love',
   };
   mocks.request.mockResolvedValueOnce({ guest: updated });
@@ -128,8 +131,9 @@ it('edits guest details and keeps the invitation token', async () => {
   await user.type(name, updated.name);
   await user.selectOptions(
     within(dialog).getByLabelText('Response'),
-    'declined',
+    'attending',
   );
+  await user.selectOptions(within(dialog).getByLabelText('Kids joining'), '4');
   await user.clear(within(dialog).getByLabelText(/^Birthday message/));
   await user.type(
     within(dialog).getByLabelText(/^Birthday message/),
@@ -143,7 +147,8 @@ it('edits guest details and keeps the invitation token', async () => {
     {
       id: guest.id,
       name: updated.name,
-      status: 'declined',
+      status: 'attending',
+      childrenCount: 4,
       message: updated.message,
     },
     'organizer-session',

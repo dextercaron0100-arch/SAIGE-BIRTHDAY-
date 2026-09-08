@@ -132,6 +132,7 @@ export default function Admin() {
   async function saveGuestEdit(changes: {
     name: string;
     status: Attendance;
+    childrenCount: number;
     message: string;
   }) {
     if (!editing) return;
@@ -349,7 +350,7 @@ export default function Admin() {
               One little celebration, all our favorite people
             </span>
             <h1>The guest book</h1>
-            <p>One invitation. One guest. One very special day.</p>
+            <p>One invitation per family. One very special day.</p>
           </div>
           <a
             className="text-link"
@@ -421,7 +422,7 @@ export default function Admin() {
                 </strong>
                 <small>
                   {status === 'attending'
-                    ? 'reserved attending seats'
+                    ? 'families attending'
                     : status === 'invited'
                       ? 'personal invitations'
                       : status === 'pending'
@@ -431,19 +432,30 @@ export default function Admin() {
               </div>
             ),
           )}
+          <div>
+            <span>children</span>
+            <strong>
+              {loaded
+                ? guests
+                    .filter((guest) => guest.status === 'attending')
+                    .reduce((total, guest) => total + guest.children_count, 0)
+                : '—'}
+            </strong>
+            <small>kids joining the celebration</small>
+          </div>
         </div>
         <section className="admin-panel">
           <h2>Invite someone special</h2>
           <form className="create-guest" onSubmit={createGuest}>
             <label htmlFor="guest-name">
-              Guest’s full name
+              Guest or family name
               <input
                 id="guest-name"
                 required
                 maxLength={120}
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder="One named guest per invitation"
+                placeholder="One family or household per invitation"
               />
             </label>
             <button className="button" disabled={busy || !loaded}>
@@ -451,8 +463,8 @@ export default function Admin() {
             </button>
           </form>
           <p className="note">
-            Personal links give access to that guest’s RSVP. Share each link
-            only with its intended guest.
+            Each personal link collects one family’s RSVP and the number of
+            children joining. Share it only with that household.
           </p>
         </section>
         <section className="admin-panel">
@@ -508,6 +520,7 @@ export default function Admin() {
                 <tr>
                   <th scope="col">Guest</th>
                   <th scope="col">Response</th>
+                  <th scope="col">Kids joining</th>
                   <th scope="col">Birthday message</th>
                   <th scope="col">Personal invitation</th>
                 </tr>
@@ -517,11 +530,12 @@ export default function Admin() {
                   <tr key={g.id}>
                     <td>
                       <strong>{g.name}</strong>
-                      <small>1 invited seat</small>
+                      <small>Family invitation</small>
                     </td>
                     <td>
                       <span className={`badge ${g.status}`}>{g.status}</span>
                     </td>
+                    <td>{g.status === 'attending' ? g.children_count : '—'}</td>
                     <td className="guest-message">{g.message || '—'}</td>
                     <td>
                       <div className="row-actions">
@@ -688,6 +702,7 @@ function EditGuestDialog({
   save: (changes: {
     name: string;
     status: Attendance;
+    childrenCount: number;
     message: string;
   }) => void;
   cancel: () => void;
@@ -695,6 +710,7 @@ function EditGuestDialog({
   const [dialog, setDialog] = useState<HTMLDialogElement | null>(null);
   const [name, setName] = useState(guest.name);
   const [status, setStatus] = useState<Attendance>(guest.status);
+  const [childrenCount, setChildrenCount] = useState(guest.children_count);
   const [message, setMessage] = useState(guest.message);
   useEffect(() => {
     dialog?.showModal();
@@ -718,7 +734,12 @@ function EditGuestDialog({
         className="edit-guest-form"
         onSubmit={(e) => {
           e.preventDefault();
-          save({ name, status, message });
+          save({
+            name,
+            status,
+            childrenCount: status === 'attending' ? childrenCount : 0,
+            message,
+          });
         }}
       >
         <label htmlFor="edit-guest-name">
@@ -742,6 +763,22 @@ function EditGuestDialog({
             <option value="pending">Pending</option>
             <option value="attending">Attending</option>
             <option value="declined">Declined</option>
+          </select>
+        </label>
+        <label htmlFor="edit-guest-children">
+          Kids joining
+          <select
+            id="edit-guest-children"
+            aria-label="Kids joining"
+            value={status === 'attending' ? childrenCount : 0}
+            disabled={status !== 'attending'}
+            onChange={(e) => setChildrenCount(Number(e.target.value))}
+          >
+            {Array.from({ length: 21 }, (_, count) => (
+              <option key={count} value={count}>
+                {count}
+              </option>
+            ))}
           </select>
         </label>
         <label htmlFor="edit-guest-message">

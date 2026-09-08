@@ -97,6 +97,7 @@ it('reads JSON bodies for protected PATCH requests', async () => {
       id: guests.guests[0].id,
       name: 'Avery Rose',
       status: 'pending',
+      childrenCount: 0,
       message: '',
     }),
   });

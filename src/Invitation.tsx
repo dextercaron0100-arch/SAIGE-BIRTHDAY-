@@ -21,6 +21,7 @@ export function RsvpForm({
   save: (reply: Reply) => Promise<InvitationData>;
 }) {
   const [status, setStatus] = useState(invitation.status);
+  const [childrenCount, setChildrenCount] = useState(invitation.childrenCount);
   const [message, setMessage] = useState(invitation.message);
   const [busy, setBusy] = useState(false);
   const [closed, setClosed] = useState(invitation.closed);
@@ -53,8 +54,9 @@ export function RsvpForm({
     }
     setBusy(true);
     try {
-      const result = await save({ status, message });
+      const result = await save({ status, childrenCount, message });
       setClosed(result.closed);
+      setChildrenCount(result.childrenCount);
       setHasSaved(true);
       setSuccess(
         preview
@@ -73,7 +75,7 @@ export function RsvpForm({
       <div className="guest-label">
         <span>Your invitation</span>
         <strong>{invitation.name}</strong>
-        <small>We have reserved one seat just for you.</small>
+        <small>This invitation is reserved for you and your family.</small>
       </div>
       {hasSaved && !success && (
         <p className="note">
@@ -128,6 +130,7 @@ export function RsvpForm({
               checked={status === 'declined'}
               onChange={() => {
                 setStatus('declined');
+                setChildrenCount(0);
                 setSuccess('');
               }}
             />
@@ -137,6 +140,27 @@ export function RsvpForm({
             </span>
           </label>
         </div>
+        {status === 'attending' && (
+          <label className="children-count-label" htmlFor="children-count">
+            How many kids will be joining?
+            <select
+              id="children-count"
+              value={childrenCount}
+              onChange={(e) => {
+                setChildrenCount(Number(e.target.value));
+                setSuccess('');
+              }}
+            >
+              {Array.from({ length: 21 }, (_, count) => (
+                <option key={count} value={count}>
+                  {count === 0
+                    ? 'No kids'
+                    : `${count} ${count === 1 ? 'kid' : 'kids'}`}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <label className="message-label" htmlFor="birthday-message">
           A little wish for Valyria <span>(optional)</span>
         </label>
@@ -181,7 +205,7 @@ export function RsvpForm({
       <p className="form-footnote">
         {preview
           ? 'Preview only · No response is saved or sent.'
-          : 'One special guest. One reserved seat. So much love.'}
+          : 'One family invitation, made with so much love.'}
       </p>
     </form>
   );
@@ -555,7 +579,7 @@ export function InvitationPage({
             <div className="cover-guest">
               <span>Especially for</span>
               <h2>{invitation.name}</h2>
-              <small>One reserved seat, with all our love</small>
+              <small>One invitation for your family, with all our love</small>
             </div>
             <button className="button" onClick={() => setStage('invitation')}>
               Open Invitation <span aria-hidden="true">↗</span>

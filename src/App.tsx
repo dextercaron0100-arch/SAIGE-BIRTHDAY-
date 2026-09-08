@@ -9,6 +9,7 @@ const Admin = lazy(() => import('./Admin'));
 const sample: Invitation = {
   name: 'Avery',
   status: 'pending',
+  childrenCount: 0,
   message: '',
   deadline: event.rsvpDeadline,
   closed: false,

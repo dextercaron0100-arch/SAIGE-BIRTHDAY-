@@ -4,6 +4,7 @@ create table public.guests (
   name text not null check (char_length(btrim(name)) between 1 and 120),
   token text not null unique check (token ~ '^[a-f0-9]{64}$'),
   status text not null default 'pending' check (status in ('pending', 'attending', 'declined')),
+  children_count integer not null default 0 check (children_count between 0 and 20),
   message text not null default '' check (char_length(message) <= 500),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -27,12 +28,15 @@ revoke all on function public.touch_guest() from public, anon, authenticated;
 -- Only the server can supply the deadline, from shared/event.ts.
 -- Lock first, then check real database time: a request waiting on a rotation
 -- or another write cannot bypass the deadline or reuse a replaced token.
-create function public.save_rsvp(p_token text, p_status text, p_message text, p_deadline timestamptz)
+create function public.save_rsvp(p_token text, p_status text, p_children_count integer, p_message text, p_deadline timestamptz)
 returns setof public.guests
 language plpgsql security invoker set search_path = '' as $$
 declare guest_id uuid;
 begin
-  if p_status is null or p_status not in ('attending', 'declined') or p_message is null or char_length(p_message) > 500 then
+  if p_status is null or p_status not in ('attending', 'declined')
+    or p_children_count is null or p_children_count not between 0 and 20
+    or (p_status = 'declined' and p_children_count <> 0)
+    or p_message is null or char_length(p_message) > 500 then
     raise exception 'INVALID_RSVP';
   end if;
   select id into guest_id from public.guests where token = p_token for update;
@@ -40,9 +44,9 @@ begin
   if p_deadline is not null and clock_timestamp() >= p_deadline then
     raise exception 'RSVP_CLOSED';
   end if;
-  return query update public.guests set status = p_status, message = p_message
+  return query update public.guests set status = p_status, children_count = p_children_count, message = p_message
     where id = guest_id and token = p_token returning *;
 end;
 $$;
-revoke all on function public.save_rsvp(text, text, text, timestamptz) from public, anon, authenticated;
-grant execute on function public.save_rsvp(text, text, text, timestamptz) to service_role;
+revoke all on function public.save_rsvp(text, text, integer, text, timestamptz) from public, anon, authenticated;
+grant execute on function public.save_rsvp(text, text, integer, text, timestamptz) to service_role;

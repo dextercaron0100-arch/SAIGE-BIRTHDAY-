@@ -16,6 +16,7 @@ import type { Invitation } from '../shared/types';
 const guest: Invitation = {
   name: 'Avery',
   status: 'pending',
+  childrenCount: 0,
   message: '',
   closed: false,
   deadline: null,
@@ -48,16 +49,24 @@ it('preserves form input after a failed save and confirms only a successful retr
     .mockResolvedValueOnce({
       ...guest,
       status: 'attending',
+      childrenCount: 2,
       message: 'Happy birthday!',
     });
   render(<RsvpForm invitation={guest} preview={false} save={save} />);
   await user.click(screen.getByLabelText(/Joyfully attending/));
+  await user.selectOptions(
+    screen.getByLabelText('How many kids will be joining?'),
+    '2',
+  );
   await user.type(screen.getByLabelText(/A little wish/), 'Happy birthday!');
   await user.click(screen.getByRole('button', { name: /Send my RSVP/ }));
   expect(await screen.findByRole('alert')).toHaveTextContent(
     'Connection interrupted.',
   );
   expect(screen.getByLabelText(/A little wish/)).toHaveValue('Happy birthday!');
+  expect(screen.getByLabelText('How many kids will be joining?')).toHaveValue(
+    '2',
+  );
   expect(
     screen.queryByText(/Your response has been saved/),
   ).not.toBeInTheDocument();
@@ -67,6 +76,7 @@ it('preserves form input after a failed save and confirms only a successful retr
   );
   expect(save).toHaveBeenLastCalledWith({
     status: 'attending',
+    childrenCount: 2,
     message: 'Happy birthday!',
   });
 });
@@ -83,6 +93,21 @@ it('restores the saved response and message', () => {
   expect(
     screen.getByRole('button', { name: /Update my response/ }),
   ).toBeEnabled();
+});
+it('restores the saved number of children for a family invitation', () => {
+  render(
+    <RsvpForm
+      invitation={{ ...guest, status: 'attending', childrenCount: 3 }}
+      preview={false}
+      save={vi.fn()}
+    />,
+  );
+  expect(screen.getByLabelText('How many kids will be joining?')).toHaveValue(
+    '3',
+  );
+  expect(
+    screen.getByText('This invitation is reserved for you and your family.'),
+  ).toBeInTheDocument();
 });
 it('disables a closed RSVP and retains the message after server deadline rejection', async () => {
   const user = userEvent.setup();

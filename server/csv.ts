@@ -13,11 +13,17 @@ export function guestsCsv(guests: Guest[]) {
   return (
     '\uFEFF' +
     [
-      ['Name', 'Response', 'Seats', 'Birthday message', 'Updated at'],
+      [
+        'Name',
+        'Response',
+        'Children joining',
+        'Birthday message',
+        'Updated at',
+      ],
       ...guests.map((g) => [
         g.name,
         g.status,
-        g.status === 'attending' ? '1' : '0',
+        g.status === 'attending' ? String(g.children_count) : '0',
         g.message,
         g.updated_at,
       ]),
