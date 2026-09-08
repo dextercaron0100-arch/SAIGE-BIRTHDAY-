@@ -27,6 +27,22 @@ export function RsvpForm({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [hasSaved, setHasSaved] = useState(invitation.status !== 'pending');
+  const [deadlineNow, setDeadlineNow] = useState(Date.now());
+  useEffect(() => {
+    if (!invitation.deadline || closed) return;
+    const deadline = Date.parse(invitation.deadline);
+    const update = () => {
+      const current = Date.now();
+      setDeadlineNow(current);
+      if (current >= deadline) setClosed(true);
+    };
+    update();
+    const id = window.setInterval(update, 1000);
+    return () => window.clearInterval(id);
+  }, [closed, invitation.deadline]);
+  const deadlineLeft = invitation.deadline
+    ? Math.max(0, Date.parse(invitation.deadline) - deadlineNow)
+    : null;
   async function submit(e: FormEvent) {
     e.preventDefault();
     setError('');
@@ -65,6 +81,16 @@ export function RsvpForm({
             ? 'Your sample response is shown below.'
             : 'Your saved response is shown below. You can update it while RSVPs are open.'}
         </p>
+      )}
+      {deadlineLeft !== null && !closed && (
+        <div className="rsvp-countdown-wrap">
+          <span className="eyebrow">RSVP closes in</span>
+          <CountdownDigits
+            milliseconds={deadlineLeft}
+            ariaLabel="Time remaining to send your RSVP"
+            className="countdown rsvp-countdown"
+          />
+        </div>
       )}
       {closed && (
         <p className="notice" role="status">
@@ -161,6 +187,32 @@ export function RsvpForm({
   );
 }
 
+function CountdownDigits({
+  milliseconds,
+  ariaLabel,
+  className = 'countdown',
+}: {
+  milliseconds: number;
+  ariaLabel: string;
+  className?: string;
+}) {
+  return (
+    <div className={className} aria-label={ariaLabel}>
+      {[
+        [Math.floor(milliseconds / 86400000), 'days'],
+        [Math.floor(milliseconds / 3600000) % 24, 'hours'],
+        [Math.floor(milliseconds / 60000) % 60, 'minutes'],
+        [Math.floor(milliseconds / 1000) % 60, 'seconds'],
+      ].map(([n, label]) => (
+        <span key={label}>
+          <strong>{String(n).padStart(2, '0')}</strong>
+          <small>{label}</small>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 function Countdown({ startsAt }: { startsAt: string }) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => {
@@ -171,19 +223,10 @@ function Countdown({ startsAt }: { startsAt: string }) {
   if (!left)
     return <p className="eyebrow">The birthday celebration is here!</p>;
   return (
-    <div className="countdown" aria-label="Time until the celebration">
-      {[
-        [Math.floor(left / 86400000), 'days'],
-        [Math.floor(left / 3600000) % 24, 'hours'],
-        [Math.floor(left / 60000) % 60, 'minutes'],
-        [Math.floor(left / 1000) % 60, 'seconds'],
-      ].map(([n, label]) => (
-        <span key={label}>
-          <strong>{String(n).padStart(2, '0')}</strong>
-          <small>{label}</small>
-        </span>
-      ))}
-    </div>
+    <CountdownDigits
+      milliseconds={left}
+      ariaLabel="Time until the celebration"
+    />
   );
 }
 

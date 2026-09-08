@@ -6,7 +6,7 @@ import {
   type Dependencies,
 } from '../server/service';
 import { guestsCsv } from '../server/csv';
-import { event, validateEvent } from '../shared/event';
+import { deadlineLabel, event, validateEvent } from '../shared/event';
 import { MemoryRepository } from './helpers';
 import type { Guest, Invitation } from '../shared/types';
 
@@ -153,6 +153,12 @@ describe('deadlines', () => {
     expect(() =>
       validateEvent({ ...event, endsAt: '2026-09-11T20:00:00' }),
     ).toThrow();
+  });
+  it('configures the production RSVP deadline through September 10', () => {
+    expect(event.rsvpDeadline).toBe('2026-09-11T00:00:00+08:00');
+    expect(deadlineLabel(event.rsvpDeadline!)).toBe(
+      'September 10, 2026 at midnight',
+    );
   });
 });
 

@@ -21,7 +21,7 @@ export const event: EventConfig = {
   venue: 'JOLLIBEE CROSSING',
   address: null,
   mapUrl: null,
-  rsvpDeadline: null, // Example: '2026-09-09T23:59:00+08:00'
+  rsvpDeadline: '2026-09-11T00:00:00+08:00',
   photos: [
     {
       src: '/photos/valyria-pink-portrait.png',
@@ -138,6 +138,29 @@ export function eventTimeLabel(config = event) {
 }
 
 export function deadlineLabel(timestamp: string, config = event) {
+  const instant = new Date(timestamp);
+  const time = new Intl.DateTimeFormat('en-US', {
+    timeZone: config.timezone,
+    hour: 'numeric',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(instant);
+  const values = Object.fromEntries(
+    time.map((part) => [part.type, part.value]),
+  );
+  if (
+    (values.hour === '00' || values.hour === '24') &&
+    values.minute === '00' &&
+    values.second === '00'
+  ) {
+    const previousDay = new Date(instant.getTime() - 1);
+    const date = new Intl.DateTimeFormat('en-US', {
+      timeZone: config.timezone,
+      dateStyle: 'long',
+    }).format(previousDay);
+    return `${date} at midnight`;
+  }
   return new Intl.DateTimeFormat('en-US', {
     timeZone: config.timezone,
     dateStyle: 'long',

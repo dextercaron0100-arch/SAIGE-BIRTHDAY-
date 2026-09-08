@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, it, vi } from 'vitest';
 import {
@@ -102,6 +102,29 @@ it('disables a closed RSVP and retains the message after server deadline rejecti
     await screen.findByRole('button', { name: /RSVPs are closed/ }),
   ).toBeDisabled();
   expect(screen.getByLabelText(/A little wish/)).toHaveValue('Love!');
+});
+it('counts down to the RSVP deadline and closes the form at the exact instant', () => {
+  vi.useFakeTimers();
+  vi.setSystemTime(new Date('2026-09-10T15:59:58Z'));
+  render(
+    <RsvpForm
+      invitation={{
+        ...guest,
+        deadline: '2026-09-11T00:00:00+08:00',
+      }}
+      preview={false}
+      save={vi.fn()}
+    />,
+  );
+  const countdown = screen.getByLabelText('Time remaining to send your RSVP');
+  expect(within(countdown).getByText('02')).toBeInTheDocument();
+  act(() => vi.advanceTimersByTime(2000));
+  expect(
+    screen.getByRole('button', { name: 'RSVPs are closed' }),
+  ).toBeDisabled();
+  expect(
+    screen.queryByLabelText('Time remaining to send your RSVP'),
+  ).not.toBeInTheDocument();
 });
 it('labels sample replies accurately without API calls', async () => {
   window.history.replaceState(null, '', '/preview');

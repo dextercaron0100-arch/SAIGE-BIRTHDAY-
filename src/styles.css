@@ -1387,6 +1387,28 @@ em {
   font-size: 10px;
   color: var(--muted);
 }
+.rsvp-countdown-wrap {
+  margin: 20px 0;
+  padding: 18px 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fbe9ef80;
+  text-align: center;
+}
+.rsvp-countdown-wrap > .eyebrow {
+  display: block;
+  margin-bottom: 13px;
+}
+.rsvp-countdown {
+  gap: 17px;
+  margin-top: 0;
+}
+.rsvp-countdown strong {
+  font-size: 28px;
+}
+.rsvp-countdown small {
+  font-size: 8px;
+}
 .rsvp-form {
   background: var(--paper);
   padding: 32px;
