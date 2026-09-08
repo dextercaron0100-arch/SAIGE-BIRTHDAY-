@@ -129,9 +129,11 @@ it('shows configured event details and photos while hiding unavailable direction
   ).toHaveLength(2);
   await user.click(screen.getByRole('button', { name: 'Next photo' }));
   expect(
-    screen.getByRole('img', { name: 'A close-up portrait of newborn Valyria' }),
+    screen.getByRole('img', {
+      name: 'Valyria dressed as a mermaid in an under-the-sea portrait setting',
+    }),
   ).toBeInTheDocument();
-  expect(screen.getByText('Photo 2 of 7')).toBeInTheDocument();
+  expect(screen.getByText('Photo 2 of 5')).toBeInTheDocument();
 });
 it('shows configured time, countdown and directions', () => {
   render(
