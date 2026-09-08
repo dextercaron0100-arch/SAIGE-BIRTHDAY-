@@ -105,7 +105,7 @@ it('labels sample replies accurately without API calls', async () => {
   );
   expect(fetch).not.toHaveBeenCalled();
 });
-it('shows TBA details, hides unavailable sections, and displays the configured photo', async () => {
+it('shows configured event details and photos while hiding unavailable directions', async () => {
   const user = userEvent.setup();
   render(<InvitationPage invitation={guest} preview={false} save={vi.fn()} />);
   await user.click(
@@ -116,12 +116,12 @@ it('shows TBA details, hides unavailable sections, and displays the configured p
   await user.click(
     await screen.findByRole('button', { name: /Open Invitation/ }),
   );
-  expect(screen.getAllByText('To be announced')).toHaveLength(3);
+  expect(screen.getByText('6:00 PM – 8:00 PM')).toBeInTheDocument();
+  expect(screen.getByText('JOLLIBEE CROSSING')).toBeInTheDocument();
   expect(screen.getByText('Friday, September 11, 2026')).toBeInTheDocument();
   expect(
     screen.queryByRole('link', { name: /Get directions/ }),
   ).not.toBeInTheDocument();
-  expect(screen.queryByLabelText(/Time until/)).not.toBeInTheDocument();
   expect(
     screen.getAllByRole('img', {
       name: 'Valyria sitting in a pink birthday portrait setting',
@@ -139,12 +139,13 @@ it('shows configured time, countdown and directions', () => {
       config={{
         ...event,
         startsAt: '2099-09-11T14:00:00+08:00',
+        endsAt: '2099-09-11T16:00:00+08:00',
         venue: 'Garden Hall',
         mapUrl: 'https://maps.google.com/',
       }}
     />,
   );
-  expect(screen.getByText('2:00 PM')).toBeInTheDocument();
+  expect(screen.getByText('2:00 PM – 4:00 PM')).toBeInTheDocument();
   expect(screen.getByRole('link', { name: /Get directions/ })).toHaveAttribute(
     'href',
     'https://maps.google.com/',

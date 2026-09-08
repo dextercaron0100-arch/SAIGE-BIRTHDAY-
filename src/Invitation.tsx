@@ -4,7 +4,7 @@ import {
   dateParts,
   deadlineLabel,
   event,
-  timeLabel,
+  eventTimeLabel,
   type EventConfig,
 } from '../shared/event';
 import type { Invitation as InvitationData, Reply } from '../shared/types';
@@ -209,11 +209,7 @@ export function EventDetails({ config = event }: { config?: EventConfig }) {
         <article>
           <Icon kind="clock" />
           <h3>The time</h3>
-          <p>
-            {config.startsAt
-              ? timeLabel(config.startsAt, config)
-              : 'To be announced'}
-          </p>
+          <p>{eventTimeLabel(config)}</p>
           <small>
             {config.startsAt
               ? config.timezone
@@ -471,7 +467,7 @@ export function InvitationPage({
                 <Icon kind="clock" />
                 <b>
                   {event.startsAt
-                    ? timeLabel(event.startsAt)
+                    ? eventTimeLabel(event).toUpperCase()
                     : 'TO BE ANNOUNCED'}
                 </b>
                 <small>PARTY TIME</small>

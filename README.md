@@ -2,7 +2,7 @@
 
 A personalized first-birthday invitation and private RSVP guest book, built with React, Vite, TypeScript, Supabase, and Vercel Node.js Functions.
 
-**Celebration:** Friday, September 11, 2026 · Asia/Manila. Time, venue, and RSVP deadline are intentionally unconfigured. Valyria’s supplied pink portrait is the featured image, with her family photos presented in an interactive carousel. Every invitation reserves exactly one named seat.
+**Celebration:** Friday, September 11, 2026 · 6:00 PM–8:00 PM · Jollibee Crossing · Asia/Manila. The RSVP deadline, street address, and map URL remain unconfigured. Valyria’s supplied pink portrait is the featured image, with her family photos presented in an interactive carousel. Every invitation reserves exactly one named seat.
 
 ## Start in Visual Studio Code
 
@@ -47,7 +47,7 @@ The browser key is deliberately public. Secret/service-role keys must **never** 
 
 Edit **`shared/event.ts`**, the single source of truth for event details, timezone, theme colors, photos, and deadline. Redeploy after changes; changing only the browser cannot override server deadline enforcement.
 
-- `startsAt: null` shows “To be announced” and hides the countdown. Once confirmed, use a timestamp such as `2026-09-11T14:00:00+08:00`. This example is **not** an actual confirmed party time.
+- `startsAt` and `endsAt` contain the confirmed party range with explicit `+08:00` offsets. Setting `startsAt` to `null` shows “To be announced” and hides the countdown.
 - `venue` and `address` are optional text. `mapUrl` must be an HTTPS URL. Directions appear only when both the venue and map URL are present.
 - `rsvpDeadline: null` keeps RSVPs open. To close at a particular instant, configure an explicit-offset timestamp, for example `2026-09-09T23:59:00+08:00`. At that instant and afterward, updates are rejected by the server and database. Saved responses remain readable.
 - Timestamps require seconds and a numeric offset, such as `+08:00`; offset-free timestamps and `Z` shorthand are rejected to keep configuration explicit. Displayed times use `Asia/Manila`.

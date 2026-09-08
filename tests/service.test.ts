@@ -150,6 +150,9 @@ describe('deadlines', () => {
     expect(() =>
       validateEvent({ ...event, startsAt: '2026-09-11T14:00:00+08:00' }),
     ).not.toThrow();
+    expect(() =>
+      validateEvent({ ...event, endsAt: '2026-09-11T20:00:00' }),
+    ).toThrow();
   });
 });
 
