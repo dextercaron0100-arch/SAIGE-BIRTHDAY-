@@ -26,6 +26,7 @@ export default function Admin() {
   const [loaded, setLoaded] = useState(false);
   const [rotating, setRotating] = useState<Guest | null>(null);
   const [editing, setEditing] = useState<Guest | null>(null);
+  const [deleting, setDeleting] = useState<Guest | null>(null);
   const [manualLink, setManualLink] = useState('');
   const activeUser = useRef<string | undefined>(undefined);
   activeUser.current = session?.user.id;
@@ -47,6 +48,7 @@ export default function Admin() {
         setManualLink('');
         setRotating(null);
         setEditing(null);
+        setDeleting(null);
       }
     });
     return () => data.subscription.unsubscribe();
@@ -82,6 +84,7 @@ export default function Admin() {
     setManualLink('');
     setRotating(null);
     setEditing(null);
+    setDeleting(null);
     if (session?.user.id) void refresh();
   }, [session?.user.id]);
   async function login(e: FormEvent) {
@@ -147,6 +150,28 @@ export default function Admin() {
       setNotice(`Guest details updated for ${guest.name}.`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Unable to update guest.');
+    } finally {
+      setBusy(false);
+    }
+  }
+  async function deleteGuest() {
+    if (!deleting) return;
+    setBusy(true);
+    setError('');
+    setNotice('');
+    try {
+      await request<{ deleted: true }>(
+        '/api/admin/guests',
+        { id: deleting.id },
+        await jwt(),
+        'DELETE',
+      );
+      setGuests((old) => old.filter((guest) => guest.id !== deleting.id));
+      setManualLink('');
+      setNotice(`Invitation deleted for ${deleting.name}.`);
+      setDeleting(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Unable to delete guest.');
     } finally {
       setBusy(false);
     }
@@ -527,6 +552,16 @@ export default function Admin() {
                         >
                           Replace link
                         </button>
+                        <button
+                          className="text-button danger"
+                          onClick={() => {
+                            setError('');
+                            setDeleting(g);
+                          }}
+                          disabled={busy}
+                        >
+                          Delete guest
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -567,8 +602,76 @@ export default function Admin() {
             cancel={() => setEditing(null)}
           />
         )}
+        {deleting && (
+          <DeleteGuestDialog
+            guest={deleting}
+            busy={busy}
+            error={error}
+            confirm={() => void deleteGuest()}
+            cancel={() => setDeleting(null)}
+          />
+        )}
       </main>
     </div>
+  );
+}
+
+function DeleteGuestDialog({
+  guest,
+  busy,
+  error,
+  confirm,
+  cancel,
+}: {
+  guest: Guest;
+  busy: boolean;
+  error: string;
+  confirm: () => void;
+  cancel: () => void;
+}) {
+  const [dialog, setDialog] = useState<HTMLDialogElement | null>(null);
+  useEffect(() => {
+    dialog?.showModal();
+    return () => dialog?.close();
+  }, [dialog]);
+  return (
+    <dialog
+      ref={setDialog}
+      onCancel={(e) => {
+        e.preventDefault();
+        if (!busy) cancel();
+      }}
+      aria-labelledby="delete-guest-title"
+    >
+      <h2 id="delete-guest-title">Delete this guest?</h2>
+      <p>
+        This permanently removes <strong>{guest.name}</strong>, their RSVP, and
+        their birthday message. Their personal invitation link will stop working
+        immediately.
+      </p>
+      {error && (
+        <p role="alert" className="error">
+          {error}
+        </p>
+      )}
+      <div className="dialog-actions">
+        <button
+          className="button secondary"
+          autoFocus
+          disabled={busy}
+          onClick={cancel}
+        >
+          Keep guest
+        </button>
+        <button
+          className="button danger-button"
+          disabled={busy}
+          onClick={confirm}
+        >
+          {busy ? 'Deleting…' : 'Delete permanently'}
+        </button>
+      </div>
+    </dialog>
   );
 }
 

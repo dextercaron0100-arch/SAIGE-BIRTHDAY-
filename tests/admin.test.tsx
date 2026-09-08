@@ -153,6 +153,39 @@ it('edits guest details and keeps the invitation token', async () => {
   expect(screen.getByText('Sending birthday love')).toBeInTheDocument();
   expect(updated.token).toBe(guest.token);
 });
+it('requires confirmation before permanently deleting a guest', async () => {
+  const user = userEvent.setup();
+  render(<Admin />);
+  await screen.findByText('Avery');
+  await user.click(screen.getAllByRole('button', { name: 'Delete guest' })[0]);
+  expect(screen.getByRole('dialog')).toHaveTextContent(
+    'Their personal invitation link will stop working immediately.',
+  );
+  await user.click(screen.getByRole('button', { name: 'Keep guest' }));
+  expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  expect(mocks.request).toHaveBeenCalledTimes(1);
+
+  await user.click(screen.getAllByRole('button', { name: 'Delete guest' })[0]);
+  mocks.request.mockRejectedValueOnce(new Error('Could not delete guest.'));
+  await user.click(screen.getByRole('button', { name: 'Delete permanently' }));
+  expect(
+    await within(screen.getByRole('dialog')).findByRole('alert'),
+  ).toHaveTextContent('Could not delete guest.');
+
+  mocks.request.mockResolvedValueOnce({ deleted: true });
+  await user.click(screen.getByRole('button', { name: 'Delete permanently' }));
+  expect(await screen.findByRole('status')).toHaveTextContent(
+    'Invitation deleted for Avery.',
+  );
+  expect(screen.queryByText('Avery')).not.toBeInTheDocument();
+  expect(screen.getByText('Blair')).toBeInTheDocument();
+  expect(mocks.request).toHaveBeenLastCalledWith(
+    '/api/admin/guests',
+    { id: guest.id },
+    'organizer-session',
+    'DELETE',
+  );
+});
 it('requires confirmation to rotate, shows failures in the dialog, and preserves the RSVP', async () => {
   const user = userEvent.setup();
   render(<Admin />);

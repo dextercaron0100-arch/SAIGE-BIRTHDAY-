@@ -105,3 +105,18 @@ it('reads JSON bodies for protected PATCH requests', async () => {
     guest: { name: 'Avery Rose', status: 'pending' },
   });
 });
+it('reads JSON bodies for protected DELETE requests', async () => {
+  const guests = await fetch(`${origin}/api/admin/guests`, {
+    headers: { Authorization: 'Bearer organizer-session' },
+  }).then((response) => response.json());
+  const response = await fetch(`${origin}/api/admin/guests`, {
+    method: 'DELETE',
+    headers: {
+      Authorization: 'Bearer organizer-session',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ id: guests.guests[0].id }),
+  });
+  expect(response.status).toBe(200);
+  expect(await response.json()).toEqual({ deleted: true });
+});

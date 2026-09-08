@@ -212,6 +212,32 @@ describe('organizer operations', () => {
       (await call('/api/invitation', { token: tokenA })).body,
     ).toMatchObject({ name: 'Avery Rose', status: 'declined' });
   });
+  it('deletes a guest and invalidates their personal invitation immediately', async () => {
+    const id = repo.guests[0].id;
+    const result = await call(
+      '/api/admin/guests',
+      { id },
+      { ...admin, method: 'DELETE' },
+    );
+    expect(result).toMatchObject({ status: 200, body: { deleted: true } });
+    expect(repo.guests).toHaveLength(1);
+    await expect(
+      call('/api/invitation', { token: tokenA }),
+    ).rejects.toMatchObject({ status: 404 });
+  });
+  it('requires organizer access to delete a guest', async () => {
+    const id = repo.guests[0].id;
+    for (const [authorization, status] of [
+      [undefined, 401],
+      ['Bearer invalid', 401],
+      ['Bearer ordinary-session', 403],
+    ] as const) {
+      await expect(
+        call('/api/admin/guests', { id }, { authorization, method: 'DELETE' }),
+      ).rejects.toMatchObject({ status });
+    }
+    expect(repo.guests).toHaveLength(2);
+  });
   it.each([
     { name: '', status: 'pending', message: '' },
     { name: 'Avery', status: 'maybe', message: '' },
@@ -268,6 +294,16 @@ describe('organizer operations', () => {
         '/api/admin/rotate',
         { id: '00000000-0000-0000-0000-000000000000' },
         admin,
+      ),
+    ).rejects.toMatchObject({ status: 404 });
+    await expect(
+      call('/api/admin/guests', { id: 'bad' }, { ...admin, method: 'DELETE' }),
+    ).rejects.toMatchObject({ status: 400 });
+    await expect(
+      call(
+        '/api/admin/guests',
+        { id: '00000000-0000-0000-0000-000000000000' },
+        { ...admin, method: 'DELETE' },
       ),
     ).rejects.toMatchObject({ status: 404 });
   });

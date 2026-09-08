@@ -1820,6 +1820,18 @@ td small {
 .row-actions .subtle {
   color: var(--muted);
 }
+.row-actions .danger {
+  color: #a62e47;
+}
+.danger-button {
+  border-color: #92243b;
+  background: #92243b;
+}
+.danger-button:hover,
+.danger-button:focus-visible {
+  border-color: #74192d;
+  background: #74192d;
+}
 .empty {
   text-align: center;
   padding: 25px 10px;

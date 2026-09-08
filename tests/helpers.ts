@@ -39,6 +39,12 @@ export class MemoryRepository implements Repository {
     Object.assign(g, changes);
     return { ...g };
   }
+  async remove(id: string) {
+    const index = this.guests.findIndex((g) => g.id === id);
+    if (index < 0) return false;
+    this.guests.splice(index, 1);
+    return true;
+  }
   async rotate(id: string, token: string) {
     const g = this.guests.find((g) => g.id === id);
     if (!g) return null;

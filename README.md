@@ -65,18 +65,19 @@ Edit **`shared/event.ts`**, the single source of truth for event details, timezo
 5. Reopening the original link retrieves the saved response and allows updates until the deadline. A successful write updates the same row; it never creates a second RSVP.
 6. Use search and response filters, refresh for fresh responses, and read totals. One attending guest equals one attending seat. CSV exports include **all guests**, regardless of active filters, and exclude tokens.
 7. To invalidate a shared link, select **Replace link** and confirm. Existing attendance/message data stays intact; the old link cannot read or write that invitation. Copy and privately share the replacement. If a write completed before replacement, its response is retained.
+8. To permanently remove an invitation, select **Delete guest** and confirm. This deletes the guest’s RSVP and message and invalidates their personal link immediately.
 
 **Invitation links are bearer credentials. Anyone holding a link can read and update that guest’s RSVP.** The browser captures its token into memory and removes the URL fragment. Refreshing the cleaned URL requires reopening the original personal link. Tokens are not persisted in local/session storage. The admin session is managed by Supabase Auth, separately from invitation tokens.
 
 ## Security and API behavior
 
-| Route               | Methods   | Authorization                              |
-| ------------------- | --------- | ------------------------------------------ |
-| `/api/invitation`   | POST      | `{ token }` in JSON body                   |
-| `/api/rsvp`         | POST      | `{ token, status, message? }` in JSON body |
-| `/api/admin/guests` | GET, POST | Supabase Bearer JWT; POST body `{ name }`  |
-| `/api/admin/rotate` | POST      | Supabase Bearer JWT; body `{ id }`         |
-| `/api/admin/export` | GET       | Supabase Bearer JWT                        |
+| Route               | Methods                  | Authorization                                                                                               |
+| ------------------- | ------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `/api/invitation`   | POST                     | `{ token }` in JSON body                                                                                    |
+| `/api/rsvp`         | POST                     | `{ token, status, message? }` in JSON body                                                                  |
+| `/api/admin/guests` | GET, POST, PATCH, DELETE | Supabase Bearer JWT; POST body `{ name }`; PATCH body `{ id, name, status, message }`; DELETE body `{ id }` |
+| `/api/admin/rotate` | POST                     | Supabase Bearer JWT; body `{ id }`                                                                          |
+| `/api/admin/export` | GET                      | Supabase Bearer JWT                                                                                         |
 
 - Every admin request calls Supabase `auth.getUser(jwt)` and checks the returned UUID against the server allowlist. Never rely on browser session claims for server authorization.
 - Each invitation uses 32 cryptographically random bytes encoded as 64 hexadecimal characters. Tokens are unique, stored only in the protected guests table, and returned only to authorized organizers. They appear in POST bodies, not API query strings.
@@ -98,7 +99,7 @@ npm run build
 
 `npm run format` applies Prettier formatting. `npm run test:watch` watches unit/integration tests. `npm run preview` serves the production frontend only; use `npm run dev` for local full-stack functionality.
 
-Tests cover API token isolation, validation, updates, deadline boundaries, per-route organizer authorization, token replacement, CSV safety, HTTP errors/body limits, failed frontend submissions, saved response restoration, preview isolation, and conditional event sections. Database tests execute the actual SQL in embedded PostgreSQL (PGlite), including service-role access, forbidden roles, constraints, deadlines, and replacement behavior. They require no Supabase credentials and do not mutate a remote database.
+Tests cover API token isolation, validation, updates, deadline boundaries, per-route organizer authorization, token replacement, confirmed guest deletion, CSV safety, HTTP errors/body limits, failed frontend submissions, saved response restoration, preview isolation, and conditional event sections. Database tests execute the actual SQL in embedded PostgreSQL (PGlite), including service-role access, forbidden roles, constraints, deadlines, and replacement behavior. They require no Supabase credentials and do not mutate a remote database.
 
 For desktop and mobile browser checks, run `npx playwright install chromium` once, then `npm run test:browser`. The browser suite starts the development server if necessary and saves full-page screenshots in ignored `artifacts/`. To use an installed Chrome instead, set `PLAYWRIGHT_CHANNEL=chrome` (PowerShell: `$env:PLAYWRIGHT_CHANNEL='chrome'`) before running the suite. The preview checks use no API; real-response checks use explicitly mocked APIs. No live guest data is created.
 

@@ -79,6 +79,16 @@ export function createRepository(): Repository {
       check(error);
       return data as Guest | null;
     },
+    async remove(id) {
+      const { data, error } = await db
+        .from('guests')
+        .delete()
+        .eq('id', id)
+        .select('id')
+        .maybeSingle();
+      check(error);
+      return data !== null;
+    },
     async rotate(id, token) {
       const { data, error } = await db
         .from('guests')

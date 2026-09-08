@@ -10,7 +10,7 @@ export async function request<T>(
   path: string,
   body?: unknown,
   jwt?: string,
-  method?: 'POST' | 'PATCH',
+  method?: 'POST' | 'PATCH' | 'DELETE',
 ): Promise<T> {
   let response: Response;
   try {

@@ -25,6 +25,7 @@ export interface Repository {
     id: string,
     changes: Pick<Guest, 'name' | 'status' | 'message'>,
   ): Promise<Guest | null>;
+  remove(id: string): Promise<boolean>;
   rotate(id: string, token: string): Promise<Guest | null>;
   userId(jwt: string): Promise<string | null>;
 }
@@ -71,7 +72,7 @@ function token(value: unknown): string {
 const routes: Record<string, string[]> = {
   '/api/invitation': ['POST'],
   '/api/rsvp': ['POST'],
-  '/api/admin/guests': ['GET', 'POST', 'PATCH'],
+  '/api/admin/guests': ['GET', 'POST', 'PATCH', 'DELETE'],
   '/api/admin/rotate': ['POST'],
   '/api/admin/export': ['GET'],
 };
@@ -142,6 +143,14 @@ export async function execute(
         status: 201,
         body: { guest: await repo.create(b.name.trim(), newToken()) },
       };
+    }
+    if (input.route === '/api/admin/guests' && input.method === 'DELETE') {
+      const b = object(input.body, ['id']);
+      if (typeof b.id !== 'string' || !uuidPattern.test(b.id))
+        throw new ApiError(400, 'Invalid guest ID.');
+      if (!(await repo.remove(b.id)))
+        throw new ApiError(404, 'Guest not found.');
+      return { status: 200, body: { deleted: true } };
     }
     if (input.route === '/api/admin/guests') {
       const b = object(input.body, ['id', 'name', 'status', 'message']);

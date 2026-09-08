@@ -70,7 +70,7 @@ export function createHandler(
         throw new ApiError(405, 'Method not allowed.');
       }
       const body =
-        method === 'POST' || method === 'PATCH'
+        method === 'POST' || method === 'PATCH' || method === 'DELETE'
           ? await readBody(req)
           : undefined;
       const deps = dependencies?.() ?? {
