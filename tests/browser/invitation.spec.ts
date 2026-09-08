@@ -30,7 +30,7 @@ test('preview cover, invitation, and sample RSVP work without a database', async
   await page.getByRole('button', { name: 'Open Invitation' }).click();
   await expect(page.getByRole('heading', { level: 1 })).toBeFocused();
   await expect(page.getByText('Friday, September 11, 2026')).toBeVisible();
-  await expect(page.getByText('6:00 PM – 8:00 PM')).toBeVisible();
+  await expect(page.getByText('12:00 PM – 2:00 PM')).toBeVisible();
   await expect(page.getByText('JOLLIBEE CROSSING')).toBeVisible();
   await expect(page.getByRole('link', { name: /Get directions/ })).toHaveCount(
     0,

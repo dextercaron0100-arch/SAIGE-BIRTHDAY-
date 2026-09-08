@@ -145,10 +145,10 @@ describe('deadlines', () => {
   });
   it('requires timestamp offsets', () => {
     expect(() =>
-      validateEvent({ ...event, startsAt: '2026-09-11T14:00:00' }),
+      validateEvent({ ...event, startsAt: '2026-09-11T13:00:00' }),
     ).toThrow();
     expect(() =>
-      validateEvent({ ...event, startsAt: '2026-09-11T14:00:00+08:00' }),
+      validateEvent({ ...event, startsAt: '2026-09-11T13:00:00+08:00' }),
     ).not.toThrow();
     expect(() =>
       validateEvent({ ...event, endsAt: '2026-09-11T20:00:00' }),

@@ -2,7 +2,7 @@
 
 A personalized first-birthday invitation and private RSVP guest book, built with React, Vite, TypeScript, Supabase, and Vercel Node.js Functions.
 
-**Celebration:** Friday, September 11, 2026 · 6:00 PM–8:00 PM · Jollibee Crossing · Asia/Manila. RSVPs close at midnight after September 10, with an on-page countdown. The street address and map URL remain unconfigured. Valyria’s supplied pink portrait is the featured image, with her family photos presented in an interactive carousel. Every invitation reserves exactly one named seat.
+**Celebration:** Friday, September 11, 2026 · 12:00 PM–2:00 PM · Jollibee Crossing · Asia/Manila. RSVPs close at midnight after September 10, with an on-page countdown. The street address and map URL remain unconfigured. Valyria’s supplied pink portrait is the featured image, with her family photos presented in an interactive carousel. Every invitation reserves exactly one named seat.
 
 ## Start in Visual Studio Code
 

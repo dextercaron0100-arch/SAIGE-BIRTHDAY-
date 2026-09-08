@@ -158,7 +158,7 @@ it('shows configured event details and photos while hiding unavailable direction
   await user.click(
     await screen.findByRole('button', { name: /Open Invitation/ }),
   );
-  expect(screen.getByText('6:00 PM – 8:00 PM')).toBeInTheDocument();
+  expect(screen.getByText('12:00 PM – 2:00 PM')).toBeInTheDocument();
   expect(screen.getByText('JOLLIBEE CROSSING')).toBeInTheDocument();
   expect(screen.getByText('Friday, September 11, 2026')).toBeInTheDocument();
   expect(
