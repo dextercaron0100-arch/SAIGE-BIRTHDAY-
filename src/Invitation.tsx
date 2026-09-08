@@ -747,23 +747,44 @@ export function InvitationPage({
           </div>
           <ol className="trivia-list">
             <li>
-              <span aria-hidden="true">01</span>
+              <div className="trivia-card-top" aria-hidden="true">
+                <span className="trivia-icon">✦</span>
+                <span className="trivia-number">01</span>
+              </div>
+              <span className="trivia-kicker">Her name</span>
               <p>
                 Valyria Saige’s name was inspired by <em>Game of Thrones</em>.
               </p>
+              <span className="trivia-flourish" aria-hidden="true">
+                <i />♡<i />
+              </span>
             </li>
             <li>
-              <span aria-hidden="true">02</span>
+              <div className="trivia-card-top" aria-hidden="true">
+                <span className="trivia-icon">♡</span>
+                <span className="trivia-number">02</span>
+              </div>
+              <span className="trivia-kicker">Her little quirk</span>
               <p>
                 Saige is afraid of dogs. Whenever she hears a dog barking, she
                 suddenly stops crying and stays very still.
               </p>
+              <span className="trivia-flourish" aria-hidden="true">
+                <i />♡<i />
+              </span>
             </li>
             <li>
-              <span aria-hidden="true">03</span>
+              <div className="trivia-card-top" aria-hidden="true">
+                <span className="trivia-icon">☆</span>
+                <span className="trivia-number">03</span>
+              </div>
+              <span className="trivia-kicker">Her favorites</span>
               <p>
                 Saige’s favorite Disney characters to watch are Moana and Elsa.
               </p>
+              <span className="trivia-flourish" aria-hidden="true">
+                <i />♡<i />
+              </span>
             </li>
           </ol>
         </section>
