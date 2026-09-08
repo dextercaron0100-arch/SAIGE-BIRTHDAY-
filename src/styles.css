@@ -1554,6 +1554,49 @@ select:focus {
   color: var(--muted);
   margin: 13px 0 0;
 }
+.trivia-section {
+  border-top: 1px solid var(--line);
+  background:
+    radial-gradient(circle at 12% 18%, #ffffff8c 0 2px, transparent 3px),
+    radial-gradient(circle at 88% 72%, #ffffff8c 0 2px, transparent 3px),
+    #fff7f8;
+}
+.trivia-list {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+  max-width: 1050px;
+  margin: 42px auto 0;
+  padding: 0;
+  list-style: none;
+}
+.trivia-list li {
+  min-height: 190px;
+  padding: 28px;
+  border: 1px solid var(--line);
+  border-radius: 90px 90px 8px 8px;
+  background: var(--paper);
+  text-align: center;
+  box-shadow: 0 14px 35px #603c470a;
+}
+.trivia-list li > span {
+  display: block;
+  margin-bottom: 18px;
+  color: var(--rose);
+  font-family: var(--serif);
+  font-size: 32px;
+  font-style: italic;
+}
+.trivia-list p {
+  margin: 0;
+  color: var(--text);
+  font-family: var(--serif);
+  font-size: 19px;
+  line-height: 1.55;
+}
+.trivia-list em {
+  color: var(--rose);
+}
 .error,
 .success,
 .notice {
@@ -2419,6 +2462,22 @@ dialog h2 {
   .message-label,
   legend {
     font-size: 12px;
+  }
+  .trivia-list {
+    grid-template-columns: 1fr;
+    gap: 14px;
+    margin-top: 26px;
+  }
+  .trivia-list li {
+    min-height: 0;
+    padding: 25px 24px;
+    border-radius: 70px 70px 8px 8px;
+  }
+  .trivia-list li > span {
+    margin-bottom: 10px;
+  }
+  .trivia-list p {
+    font-size: 18px;
   }
   textarea,
   input:not([type='radio']),

@@ -192,6 +192,12 @@ it('shows configured event details and photos while hiding unavailable direction
     ),
   ).toBeInTheDocument();
   expect(
+    screen.getByRole('heading', { name: 'Little things about Saige.' }),
+  ).toBeInTheDocument();
+  expect(
+    screen.getByText(/favorite Disney characters to watch are Moana and Elsa/),
+  ).toBeInTheDocument();
+  expect(
     screen.queryByRole('link', { name: /Get directions/ }),
   ).not.toBeInTheDocument();
   expect(

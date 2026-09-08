@@ -734,6 +734,39 @@ export function InvitationPage({
           </div>
           <RsvpForm invitation={invitation} preview={preview} save={save} />
         </section>
+        <section
+          className="trivia-section section-pad"
+          aria-labelledby="trivia-title"
+        >
+          <div className="section-heading">
+            <span className="eyebrow">A few sweet little facts</span>
+            <h2 id="trivia-title">
+              Little things about <em>Saige.</em>
+            </h2>
+            <p>Three tiny details that make our birthday girl so special.</p>
+          </div>
+          <ol className="trivia-list">
+            <li>
+              <span aria-hidden="true">01</span>
+              <p>
+                Valyria Saige’s name was inspired by <em>Game of Thrones</em>.
+              </p>
+            </li>
+            <li>
+              <span aria-hidden="true">02</span>
+              <p>
+                Saige is afraid of dogs. Whenever she hears a dog barking, she
+                suddenly stops crying and stays very still.
+              </p>
+            </li>
+            <li>
+              <span aria-hidden="true">03</span>
+              <p>
+                Saige’s favorite Disney characters to watch are Moana and Elsa.
+              </p>
+            </li>
+          </ol>
+        </section>
         <section className="closing">
           <span aria-hidden="true">♡</span>
           <span className="eyebrow">From our family to you</span>
