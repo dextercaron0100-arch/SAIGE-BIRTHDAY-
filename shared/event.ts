@@ -43,6 +43,22 @@ export const event: EventConfig = {
       src: '/photos/valyria-with-dad.jpeg',
       alt: 'Valyria being held outdoors by her dad',
     },
+    {
+      src: '/photos/valyria-newborn-closeup.jpeg',
+      alt: 'A close-up portrait of newborn Valyria',
+    },
+    {
+      src: '/photos/valyria-floral-portrait.jpeg',
+      alt: 'Valyria smiling in a floral outfit',
+    },
+    {
+      src: '/photos/valyria-garden-sunflower.jpeg',
+      alt: 'Valyria in her sunflower outfit surrounded by garden flowers',
+    },
+    {
+      src: '/photos/valyria-pink-overalls.jpeg',
+      alt: 'Valyria smiling in pink overalls and a lace bow',
+    },
   ],
   colors: {
     background: '#fbe9ef',

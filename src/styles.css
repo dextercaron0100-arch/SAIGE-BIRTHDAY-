@@ -1278,11 +1278,17 @@ em {
   text-align: center;
   text-transform: uppercase;
 }
+.carousel-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 17px;
+}
 .carousel-dots {
   display: flex;
-  justify-content: center;
   gap: 9px;
-  margin-top: 17px;
 }
 .carousel-dots button {
   width: 10px;
@@ -1301,6 +1307,25 @@ em {
 }
 .carousel-dots button.active {
   background: var(--rose);
+}
+.carousel-play-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border: 1px solid #b63e6966;
+  border-radius: 999px;
+  color: var(--text);
+  background: #fffaf7b8;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.carousel-play-toggle:hover,
+.carousel-play-toggle:focus-visible {
+  border-color: var(--rose);
+  background: var(--paper);
 }
 @keyframes carousel-photo-in {
   from {

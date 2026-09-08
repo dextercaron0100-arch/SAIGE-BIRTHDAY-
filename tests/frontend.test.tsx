@@ -1,8 +1,13 @@
 // @vitest-environment jsdom
-import { render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, expect, it, vi } from 'vitest';
-import { EventDetails, InvitationPage, RsvpForm } from '../src/Invitation';
+import {
+  EventDetails,
+  InvitationPage,
+  PhotoCarousel,
+  RsvpForm,
+} from '../src/Invitation';
 import { App } from '../src/App';
 import { RequestError } from '../src/api';
 import { event } from '../shared/event';
@@ -16,10 +21,24 @@ const guest: Invitation = {
   deadline: null,
 };
 beforeEach(() => {
+  vi.useRealTimers();
   window.history.replaceState(null, '', '/');
   vi.restoreAllMocks();
   vi.stubGlobal('scrollTo', vi.fn());
   vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: true }));
+});
+it('automatically advances carousel photos every 1.5 seconds and can pause', () => {
+  vi.stubGlobal('matchMedia', vi.fn().mockReturnValue({ matches: false }));
+  vi.useFakeTimers();
+  render(<PhotoCarousel photos={event.photos} />);
+  expect(screen.getByText('Photo 1 of 9')).toBeInTheDocument();
+  act(() => vi.advanceTimersByTime(1500));
+  expect(screen.getByText('Photo 2 of 9')).toBeInTheDocument();
+  fireEvent.click(
+    screen.getByRole('button', { name: 'Pause automatic slideshow' }),
+  );
+  act(() => vi.advanceTimersByTime(3000));
+  expect(screen.getByText('Photo 2 of 9')).toBeInTheDocument();
 });
 it('preserves form input after a failed save and confirms only a successful retry', async () => {
   const user = userEvent.setup();
@@ -133,7 +152,7 @@ it('shows configured event details and photos while hiding unavailable direction
       name: 'Valyria dressed as a mermaid in an under-the-sea portrait setting',
     }),
   ).toBeInTheDocument();
-  expect(screen.getByText('Photo 2 of 5')).toBeInTheDocument();
+  expect(screen.getByText('Photo 2 of 9')).toBeInTheDocument();
 });
 it('shows configured time, countdown and directions', () => {
   render(

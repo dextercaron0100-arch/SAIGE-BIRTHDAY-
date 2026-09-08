@@ -240,9 +240,23 @@ export function EventDetails({ config = event }: { config?: EventConfig }) {
 
 export function PhotoCarousel({ photos }: { photos: EventConfig['photos'] }) {
   const [index, setIndex] = useState(0);
+  const [playing, setPlaying] = useState(
+    () =>
+      typeof window === 'undefined' ||
+      typeof window.matchMedia !== 'function' ||
+      !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
   const touchStart = useRef<number | null>(null);
   const move = (amount: number) =>
     setIndex((current) => (current + amount + photos.length) % photos.length);
+  useEffect(() => {
+    if (!playing || photos.length <= 1) return;
+    const timer = window.setTimeout(
+      () => setIndex((current) => (current + 1) % photos.length),
+      1500,
+    );
+    return () => window.clearTimeout(timer);
+  }, [index, photos.length, playing]);
   const photo = photos[index];
   if (!photo) return null;
   return (
@@ -297,21 +311,38 @@ export function PhotoCarousel({ photos }: { photos: EventConfig['photos'] }) {
         )}
       </div>
       <p className="carousel-caption">{photo.alt}</p>
-      <p className="carousel-status" aria-live="polite" aria-atomic="true">
+      <p
+        className="carousel-status"
+        aria-live={playing ? 'off' : 'polite'}
+        aria-atomic="true"
+      >
         Photo {index + 1} of {photos.length}
       </p>
       {photos.length > 1 && (
-        <div className="carousel-dots" aria-label="Choose a photo">
-          {photos.map((item, itemIndex) => (
-            <button
-              type="button"
-              key={item.src}
-              className={itemIndex === index ? 'active' : ''}
-              onClick={() => setIndex(itemIndex)}
-              aria-label={`Show photo ${itemIndex + 1}`}
-              aria-current={itemIndex === index ? 'true' : undefined}
-            />
-          ))}
+        <div className="carousel-controls">
+          <div className="carousel-dots" aria-label="Choose a photo">
+            {photos.map((item, itemIndex) => (
+              <button
+                type="button"
+                key={item.src}
+                className={itemIndex === index ? 'active' : ''}
+                onClick={() => setIndex(itemIndex)}
+                aria-label={`Show photo ${itemIndex + 1}`}
+                aria-current={itemIndex === index ? 'true' : undefined}
+              />
+            ))}
+          </div>
+          <button
+            type="button"
+            className="carousel-play-toggle"
+            onClick={() => setPlaying((current) => !current)}
+            aria-label={
+              playing ? 'Pause automatic slideshow' : 'Play automatic slideshow'
+            }
+          >
+            <span aria-hidden="true">{playing ? 'Ⅱ' : '▶'}</span>
+            {playing ? 'Pause' : 'Play'}
+          </button>
         </div>
       )}
     </div>
