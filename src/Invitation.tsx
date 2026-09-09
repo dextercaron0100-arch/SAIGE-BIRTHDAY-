@@ -254,6 +254,63 @@ function Countdown({ startsAt }: { startsAt: string }) {
   );
 }
 
+function TriviaIcon({ type }: { type: 'crown' | 'dog' | 'favorites' }) {
+  if (type === 'crown') {
+    return (
+      <svg className="trivia-icon" viewBox="0 0 64 64" aria-hidden="true">
+        <ellipse cx="32" cy="52" rx="23" ry="5" fill="#f5dfe7" />
+        <path
+          d="M13 22.5 23.5 34 32 16l8.5 18L51 22.5l-3.5 24h-31z"
+          fill="#ff7fa4"
+        />
+        <path d="M17 40h30.5l-1 7h-29z" fill="#9b66c8" />
+        <circle cx="13" cy="21" r="3.5" fill="#f4bd58" />
+        <circle cx="32" cy="14.5" r="3.5" fill="#f4bd58" />
+        <circle cx="51" cy="21" r="3.5" fill="#f4bd58" />
+        <path d="m32 35 3 3-3 3-3-3z" fill="#fff4f7" />
+      </svg>
+    );
+  }
+
+  if (type === 'dog') {
+    return (
+      <svg className="trivia-icon" viewBox="0 0 64 64" aria-hidden="true">
+        <ellipse cx="32" cy="53" rx="23" ry="5" fill="#eef1f4" />
+        <path
+          d="M20 25c-8-8-14-4-13 5 1 7 6 13 13 13zM44 25c8-8 14-4 13 5-1 7-6 13-13 13z"
+          fill="#9b66c8"
+        />
+        <path
+          d="M16 34c0-12 7-20 16-20s16 8 16 20c0 13-7 20-16 20s-16-7-16-20"
+          fill="#f1bd85"
+        />
+        <path d="M23 20c3-5 15-7 19 1-7-1-14 1-19 5z" fill="#ff8eaa" />
+        <circle cx="25" cy="35" r="2.2" fill="#513849" />
+        <circle cx="39" cy="35" r="2.2" fill="#513849" />
+        <path d="M27 41q5-5 10 0-1 8-5 8t-5-8" fill="#fff4f1" />
+        <path d="M29 41q3-3 6 0-1 3-3 3t-3-3" fill="#513849" />
+      </svg>
+    );
+  }
+
+  return (
+    <svg className="trivia-icon" viewBox="0 0 64 64" aria-hidden="true">
+      <ellipse cx="32" cy="53" rx="24" ry="5" fill="#eef1f4" />
+      <rect x="10" y="13" width="44" height="34" rx="7" fill="#39b9d1" />
+      <rect x="15" y="18" width="34" height="24" rx="4" fill="#fff4f7" />
+      <path d="M15 36q8-10 17 0t17 0v6H15z" fill="#ff86a7" />
+      <path
+        d="M37 20v17M30 24l14 9M44 24l-14 9M32 19l5 4 5-4M32 38l5-4 5 4"
+        fill="none"
+        stroke="#8b67cc"
+        strokeLinecap="round"
+        strokeWidth="2"
+      />
+      <path d="m25 48-4 7M39 48l4 7" stroke="#006b7d" strokeWidth="3" />
+    </svg>
+  );
+}
+
 export function EventDetails({ config = event }: { config?: EventConfig }) {
   return (
     <section id="details" className="details section-pad">
@@ -748,7 +805,7 @@ export function InvitationPage({
           <ol className="trivia-list">
             <li>
               <div className="trivia-card-top" aria-hidden="true">
-                <span className="trivia-icon">✦</span>
+                <TriviaIcon type="crown" />
                 <span className="trivia-number">01</span>
               </div>
               <span className="trivia-kicker">Her name</span>
@@ -761,7 +818,7 @@ export function InvitationPage({
             </li>
             <li>
               <div className="trivia-card-top" aria-hidden="true">
-                <span className="trivia-icon">♡</span>
+                <TriviaIcon type="dog" />
                 <span className="trivia-number">02</span>
               </div>
               <span className="trivia-kicker">Her little quirk</span>
@@ -775,7 +832,7 @@ export function InvitationPage({
             </li>
             <li>
               <div className="trivia-card-top" aria-hidden="true">
-                <span className="trivia-icon">☆</span>
+                <TriviaIcon type="favorites" />
                 <span className="trivia-number">03</span>
               </div>
               <span className="trivia-kicker">Her favorites</span>
